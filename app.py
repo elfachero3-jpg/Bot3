@@ -16,10 +16,7 @@ from ui.components import (
     render_downloads,
     render_footer
 )
-from core.transcription import (
-    transcribe_audio_file,
-    align_speakers
-)
+from core.transcription import transcribe_audio, align_transcriptions
 from core.reports import (
     analyze_lesson_context,
     research_best_practices,
@@ -73,11 +70,13 @@ if st.button("🚀 Generate Observation Report", type="primary", use_container_w
         if teacher_file:
             with st.spinner("🔄 Step 1/5: Transcribing teacher audio..."):
                 try:
-                    teacher_content = transcribe_audio_file(
-                        file_obj=teacher_file,
+                    teacher_content = transcribe_audio(
+                        audio_file=teacher_file,
+                        is_teacher=True,
                         client=client,
                         config=transcription_cfg
                     )
+                    st.session_state.teacher_transcription = teacher_content
                     st.success("✅ Teacher audio transcribed!")
                 except Exception as e:
                     st.error(f"❌ {str(e)}")
@@ -89,61 +88,79 @@ if st.button("🚀 Generate Observation Report", type="primary", use_container_w
         if observer_file:
             with st.spinner("🔄 Step 2/5: Transcribing observer audio..."):
                 try:
-                    observer_content = transcribe_audio_file(
-                        file_obj=observer_file,
+                    observer_content = transcribe_audio(
+                        audio_file=observer_file,
+                        is_teacher=False,
                         client=client,
                         config=transcription_cfg
                     )
+                    st.session_state.observer_transcription = observer_content
                     st.success("✅ Observer audio transcribed!")
                 except Exception as e:
                     st.error(f"❌ {str(e)}")
                     st.stop()
+        else:
+            # Allow typed notes to serve as “observer content”
+            observer_content = observer_notes or ""
 
-        # STEP 3: Align Speakers (if teacher audio exists)
+        # STEP 3: Align Transcriptions
         if teacher_content:
-            with st.spinner("🔄 Step 3/5: Aligning speakers..."):
+            with st.spinner("🔄 Step 3/5: Aligning observations chronologically..."):
                 try:
-                    aligned_teacher, aligned_observer = align_speakers(teacher_content, observer_content)
+                    aligned_teacher, aligned_observer = align_transcriptions(
+                        teacher_text=teacher_content,
+                        observer_content=observer_content,
+                        client=client,
+                        config=transcription_cfg
+                    )
                     st.session_state.aligned_teacher = aligned_teacher
                     st.session_state.aligned_observer = aligned_observer
-                    st.success("✅ Speaker alignment complete!")
+                    st.success("✅ Observations aligned chronologically!")
                 except Exception as e:
-                    st.error(f"❌ {str(e)}")
+                    st.error(f"❌ Alignment failed: {str(e)}")
                     st.stop()
+        else:
+            st.session_state.aligned_teacher = ""
+            st.session_state.aligned_observer = observer_content
 
-        # STEP 4: Analyze Lesson Context
-        with st.spinner("🔄 Step 4/5: Analyzing lesson context..."):
+        # STEP 4: Research Best Practices (includes lesson analysis)
+        with st.spinner("🔄 Step 4/5: Researching music education best practices..."):
             try:
                 lesson_analysis = analyze_lesson_context(
-                    teacher_content=teacher_content,
-                    observer_notes=observer_notes,
-                    evaluation_criteria=evaluation_criteria,
-                    settings=settings,
+                    st.session_state.aligned_teacher,
                     client=client,
-                    generation_cfg=generation_cfg
+                    config=generation_cfg
                 )
                 st.session_state.lesson_analysis = lesson_analysis
-                st.success("✅ Lesson context analyzed!")
+
+                best_practices = research_best_practices(
+                    lesson_analysis,
+                    client=client,
+                    config=generation_cfg
+                )
+                st.success("✅ Best practices research completed!")
             except Exception as e:
-                st.error(f"❌ {str(e)}")
-                st.stop()
+                st.warning(f"⚠️ Research step encountered an issue. Proceeding with analysis: {str(e)}")
+                st.session_state.lesson_analysis = st.session_state.get("lesson_analysis") or ""
+                best_practices = "Using general music education principles."
 
         # STEP 5: Generate Observation Report
-        with st.spinner("📝 Step 5/5: Generating observation report..."):
+        with st.spinner("📝 Step 5/5: Generating comprehensive observation report..."):
             try:
-                report_pdf = generate_observation_report(
-                    teacher_name=teacher_name,
-                    observer_name=observer_name,
-                    include_transcript=settings["include_transcript"],
-                    report_sections=settings["report_sections"],
-                    report_length=settings["report_length"],
+                st.session_state.observation_report = generate_observation_report(
                     lesson_analysis=st.session_state.lesson_analysis,
+                    best_practices=best_practices,
                     aligned_teacher=st.session_state.aligned_teacher,
-                    aligned_observer=st.session_state.aligned_observer
+                    aligned_observer=st.session_state.aligned_observer,
+                    evaluation_criteria=evaluation_criteria,
+                    report_sections=settings['report_sections'],
+                    report_length=settings['report_length'],
+                    client=client,
+                    config=generation_cfg
                 )
-                st.session_state.observation_report = report_pdf
+                st.success("✅ Observation report generated!")
             except Exception as e:
-                st.error(f"❌ {str(e)}")
+                st.error(f"❌ Report generation failed: {str(e)}")
                 st.stop()
 
         # Success message
