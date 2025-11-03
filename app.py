@@ -14,41 +14,41 @@ from ui.components import (
     render_audio_uploads,
     render_text_inputs,
     render_downloads,
-    render_footer
+    render_footer,
 )
-from core.transcription import transcribe_audio, align_transcriptions
+from core.transcription import (
+    process_teacher_audio,
+    process_observer_audio,
+    align_transcriptions,
+)
 from core.reports import (
     analyze_lesson_context,
     research_best_practices,
-    generate_observation_report
+    generate_observation_report,
+)
+from core.utils import (
+    setup_gemini_client,
+    get_generation_config,
 )
 
-# --- App Initialization ----------------------------------------------------
-st.set_page_config(**config.PAGE_CONFIG)
-# moved earlier so CSS can read the choice on first load
-config.initialize_session_state()
+# --- Page Setup ------------------------------------------------------------
+st.set_page_config(
+    page_title="Music Teacher Observation Assistant",
+    page_icon="🎵",
+    layout="centered",
+)
+
+# Inject CSS
 inject_custom_css()
 
-# Create API client and configs
-client = config.create_client()
-generation_cfg, transcription_cfg = config.get_generation_configs()
-
-# --- UI Rendering ----------------------------------------------------------
+# Header
 render_header()
 
-# Sidebar configuration
+# Sidebar config
 settings = render_sidebar_config()
 
-# Main content area
-st.markdown("## 📋 Observation Data")
-
 # Name inputs
-teacher_name, observer_name = render_name_inputs()
-# Store in session state for download component
-st.session_state.teacher_name = teacher_name
-st.session_state.observer_name = observer_name
-
-st.markdown("---")
+render_name_inputs()
 
 # Audio uploads
 teacher_file, observer_file = render_audio_uploads()
@@ -64,75 +64,48 @@ if st.button("🚀 Generate Observation Report", type="primary", use_container_w
         st.warning("Please provide at least a teacher audio file, observer notes, or evaluation criteria.")
         st.stop()
 
-    with st.spinner("🔄 Processing inputs..."):
-        # STEP 1: Transcribe Teacher Audio
-        teacher_content = ""
-        if teacher_file:
-            with st.spinner("🔄 Step 1/5: Transcribing teacher audio..."):
-                try:
-                    teacher_content = transcribe_audio(
-                        audio_file=teacher_file,
-                        is_teacher=True,
-                        client=client,
-                        config=transcription_cfg
-                    )
-                    st.session_state.teacher_transcription = teacher_content
-                    st.success("✅ Teacher audio transcribed!")
-                except Exception as e:
-                    st.error(f"❌ {str(e)}")
-                    st.error("Please verify the audio file is not corrupted and try again.")
-                    st.stop()
+    with st.spinner("🔄 Processing..."):
+        # Setup client/config
+        client = setup_gemini_client()
+        generation_cfg = get_generation_config()
 
-        # STEP 2: Transcribe Observer Audio (if provided)
-        observer_content = ""
-        if observer_file:
-            with st.spinner("🔄 Step 2/5: Transcribing observer audio..."):
-                try:
-                    observer_content = transcribe_audio(
-                        audio_file=observer_file,
-                        is_teacher=False,
-                        client=client,
-                        config=transcription_cfg
-                    )
-                    st.session_state.observer_transcription = observer_content
-                    st.success("✅ Observer audio transcribed!")
-                except Exception as e:
-                    st.error(f"❌ {str(e)}")
-                    st.stop()
+        # STEP 1: Transcribe Teacher
+        if teacher_file:
+            with st.spinner("🎙️ Step 1/5: Transcribing teacher audio..."):
+                st.session_state.teacher_transcription = process_teacher_audio(
+                    teacher_file, client, generation_cfg
+                )
         else:
-            # Allow typed notes to serve as “observer content”
-            observer_content = observer_notes or ""
+            st.session_state.teacher_transcription = ""
+
+        # STEP 2: Transcribe or load Observer Notes
+        with st.spinner("📝 Step 2/5: Processing observer notes..."):
+            if observer_file:
+                st.session_state.observer_transcription = process_observer_audio(
+                    observer_file, client, generation_cfg
+                )
+            else:
+                st.session_state.observer_transcription = observer_notes or ""
 
         # STEP 3: Align Transcriptions
-        if teacher_content:
-            with st.spinner("🔄 Step 3/5: Aligning observations chronologically..."):
-                try:
-                    aligned_teacher, aligned_observer = align_transcriptions(
-                        teacher_text=teacher_content,
-                        observer_content=observer_content,
-                        client=client,
-                        config=transcription_cfg
-                    )
-                    st.session_state.aligned_teacher = aligned_teacher
-                    st.session_state.aligned_observer = aligned_observer
-                    st.success("✅ Observations aligned chronologically!")
-                except Exception as e:
-                    st.error(f"❌ Alignment failed: {str(e)}")
-                    st.stop()
-        else:
-            st.session_state.aligned_teacher = ""
-            st.session_state.aligned_observer = observer_content
+        with st.spinner("🧭 Step 3/5: Aligning transcriptions..."):
+            st.session_state.aligned_teacher, st.session_state.aligned_observer = align_transcriptions(
+                st.session_state.teacher_transcription,
+                st.session_state.observer_transcription,
+                client,
+                generation_cfg
+            )
 
-        # STEP 4: Research Best Practices (includes lesson analysis)
-        with st.spinner("🔄 Step 4/5: Researching music education best practices..."):
+        # STEP 4: Lesson Analysis + (optional) Best Practices
+        with st.spinner("🔬 Step 4/5: Analyzing lesson context..."):
+            lesson_analysis = analyze_lesson_context(
+                transcription=st.session_state.teacher_transcription,
+                client=client,
+                config=generation_cfg
+            )
+            st.session_state.lesson_analysis = lesson_analysis
+
             try:
-                lesson_analysis = analyze_lesson_context(
-                    st.session_state.aligned_teacher,
-                    client=client,
-                    config=generation_cfg
-                )
-                st.session_state.lesson_analysis = lesson_analysis
-
                 best_practices = research_best_practices(
                     lesson_analysis,
                     client=client,
