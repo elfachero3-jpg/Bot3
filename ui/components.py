@@ -13,33 +13,29 @@ def inject_custom_css():
     .main-header h1 { font-size: 2.5rem; font-weight: 600; margin-bottom: 10px; }
     .main-header p { font-size: 1.1rem; opacity: 0.85; color: #546e7a; }
     .creator-text { font-size: 0.9rem; margin-top: 5px; opacity: 0.75; color: #607d8b; }
-    .stButton > button { background: #37474f; color: white; border: none; padding: 15px 40px; font-size: 1.1rem; font-weight: 600; border-radius: 8px; width: 100%; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); transition: all 0.3s ease; }
-    .stButton > button:hover { background: #455a64; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); }
-    .stDownloadButton > button { background: #2e7d32 !important; color: white !important; border: none; padding: 15px 40px; font-size: 1.1rem; font-weight: 600; border-radius: 8px; width: 100%; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); }
-    .stDownloadButton > button:hover { background: #388e3c !important; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); }
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+    .stButton > button { background: #37474f; color: white; border-radius: 10px; border: none; padding: 0.6rem 1rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); transition: all 0.3s ease; }
+    .stButton > button:hover { background: #263238; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+    .stDownloadButton > button { width: 100%; }
+    .expander > div { padding: 0.5rem 0.75rem; }
+    .stTextArea textarea { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
     </style>
     """, unsafe_allow_html=True)
 
-
 # --- Header ----------------------------------------------------------------
 def render_header():
-    """Render app header with title and description"""
+    """Render app header"""
     st.markdown("""
     <div class="main-header">
-      <h1><i class="fas fa-music"></i> Music Teacher Observation Assistant</h1>
-      <p>AI-Powered Classroom Observation & Feedback Tool</p>
-      <p class="creator-text">Created by Brett Taylor</p>
+        <h1>🎵 Music Teacher Observation Assistant</h1>
+        <p>Create clear, professional observations with aligned evidence and targeted feedback.</p>
+        <div class="creator-text">Created by Brett Taylor</div>
     </div>
     """, unsafe_allow_html=True)
 
-
-# --- Sidebar Configuration -------------------------------------------------
+# --- Sidebar Config ---------------------------------------------------------
 def render_sidebar_config():
     """
-    Render sidebar configuration options
+    Render configuration controls in the sidebar
     
     Returns:
         Dictionary with settings: report_length, include_transcript, report_sections
@@ -74,85 +70,63 @@ def render_sidebar_config():
         "report_sections": report_sections
     }
 
-
-# --- Input Components ------------------------------------------------------
+# --- Name Inputs ------------------------------------------------------------
 def render_name_inputs():
-    """
-    Render teacher and observer name input fields
-    
-    Returns:
-        Tuple of (teacher_name, observer_name)
-    """
-    col1, col2 = st.columns(2)
-    with col1:
-        teacher_name = st.text_input("👤 Teacher Name", placeholder="Enter teacher's name (optional)")
-    with col2:
-        observer_name = st.text_input("👤 Observer Name", placeholder="Enter observer's name (optional)")
-    
-    return teacher_name, observer_name
+    """Render inputs for teacher and observer names"""
+    c1, c2 = st.columns(2)
+    with c1:
+        st.text_input("Teacher Name", key="teacher_name", placeholder="Enter teacher's full name")
+    with c2:
+        st.text_input("Observer Name", key="observer_name", placeholder="Enter observer's full name")
 
-
+# --- Audio Uploads ----------------------------------------------------------
 def render_audio_uploads():
-    """
-    Render audio file upload components
+    """Render audio upload widgets"""
+    c1, c2 = st.columns(2)
     
-    Returns:
-        Tuple of (teacher_file, observer_file)
-    """
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown("### 📁 Teacher Audio (Required)")
+    with c1:
         teacher_file = st.file_uploader(
-            "Upload classroom audio recording",
-            type=["mp3", "wav", "m4a", "flac", "ogg", "webm"],
-            key="teacher_upload",
-            help="Primary classroom recording with teacher and student interactions"
+            "Upload Teacher Audio (MP3/WAV/M4A)",
+            type=["mp3", "wav", "m4a"],
+            key="teacher_audio"
         )
-        if teacher_file:
-            file_size = teacher_file.size / (1024 * 1024)
-            st.success(f"✅ **{teacher_file.name}** ({file_size:.2f} MB)")
-            st.audio(teacher_file, format=f'audio/{teacher_file.name.split(".")[-1]}')
-
-    with col2:
-        st.markdown("### 📁 Observer Audio (Optional)")
+    with c2:
         observer_file = st.file_uploader(
-            "Upload observer's verbal notes",
-            type=["mp3", "wav", "m4a", "flac", "ogg", "webm"],
-            key="observer_upload",
-            help="Observer's audio commentary during the observation"
+            "Upload Observer Audio (optional)",
+            type=["mp3", "wav", "m4a"],
+            key="observer_audio"
         )
-        if observer_file:
-            file_size = observer_file.size / (1024 * 1024)
-            st.success(f"✅ **{observer_file.name}** ({file_size:.2f} MB)")
-            st.audio(observer_file, format=f'audio/{observer_file.name.split(".")[-1]}')
-    
     return teacher_file, observer_file
 
-
+# --- Text Inputs ------------------------------------------------------------
 def render_text_inputs():
-    """
-    Render text input components for observer notes and evaluation criteria
-    
-    Returns:
-        Tuple of (observer_notes, evaluation_criteria)
-    """
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown("### 📝 Observer Text Notes (Optional)")
-        observer_notes = st.text_area(
-            "Written observation notes",
-            placeholder="Enter any written notes from the observation...",
-            height=200,
-            help="Additional written observations or comments"
+    """Render observer notes and evaluation criteria inputs"""
+    with st.expander("Observer Notes / Evaluation Criteria", expanded=False):
+        st.markdown("You can paste observer notes, upload audio, and/or provide evaluation criteria.")
+        
+        notes_method = st.radio(
+            "Observer notes source",
+            ["Paste Text", "Upload Audio"],
+            horizontal=True
         )
-
-    with col2:
-        st.markdown("### 🎯 Evaluation Criteria (Optional)")
+        
+        observer_notes = ""
+        if notes_method == "Paste Text":
+            observer_notes = st.text_area(
+                "Paste observer notes (optional)",
+                placeholder="Enter your notes here...",
+                height=200,
+            )
+        else:
+            st.info("Upload the observer audio in the 'Upload Observer Audio' section above.")
+        
+        st.markdown("---")
         criteria_method = st.radio(
-            "Choose input method:", ["Paste Text", "Upload Document"], horizontal=True
+            "Evaluation criteria source",
+            ["Paste Text", "Upload Document"],
+            horizontal=True
         )
+        
         evaluation_criteria = ""
         if criteria_method == "Paste Text":
             evaluation_criteria = st.text_area(
@@ -202,6 +176,7 @@ def render_downloads(settings):
     # Generate timestamp
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     date_time_formatted = datetime.now().strftime('%B %d, %Y at %I:%M %p')
+    report_date_formatted = datetime.now().strftime('%B %d, %Y')
 
     col1, col2 = st.columns(2)
 
@@ -216,7 +191,7 @@ def render_downloads(settings):
                 report_text=st.session_state.observation_report,
                 teacher_name=teacher_name,
                 observer_name=observer_name,
-                date_time=date_time_formatted,
+                date_time=report_date_formatted,
                 report_length=settings['report_length'].lower(),
             )
             st.download_button(
@@ -234,7 +209,7 @@ def render_downloads(settings):
                 st.session_state.observation_report,
                 teacher_name,
                 observer_name,
-                date_time_formatted
+                report_date_formatted
             )
             st.download_button(
                 label="⬇️ Download Observation Report (TXT - Fallback)",
@@ -256,7 +231,7 @@ def render_downloads(settings):
                 else:
                     transcript_pdf_bytes = create_dual_column_pdf(
                         st.session_state.aligned_teacher,
-                        "No observer audio or notes provided."
+                        ""
                     )
                 st.download_button(
                     label="⬇️ Download Full Transcript (PDF)",
