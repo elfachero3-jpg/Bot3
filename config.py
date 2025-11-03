@@ -67,6 +67,6 @@ PAGE_CONFIG = {
     "page_title": "Music Teacher Observation Assistant",
     "page_icon": "🎵",
     "layout": "wide",
-    # NEW: requested behavior — sidebar starts collapsed
     "initial_sidebar_state": "collapsed",
 }
+
