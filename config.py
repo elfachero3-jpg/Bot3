@@ -13,22 +13,34 @@ def get_api_key():
         st.stop()
     return API_KEY
 
-# --- Client ----------------------------------------------------------------
 def create_client():
     """Create and return the Gemini client"""
     return genai.Client(api_key=get_api_key())
 
+def load_developer_prompt():
+    """Load system/developer prompt from identity.txt"""
+    with open("identity.txt", "r", encoding="utf-8") as f:
+        return f.read()
+
 # --- Generation Configs ----------------------------------------------------
 def get_generation_configs():
-    """Return generation and transcription config objects"""
+    """Create and return generation configurations"""
+    system_instructions = load_developer_prompt()
+    search_tool = types.Tool(google_search=types.GoogleSearch())
+
     generation_cfg = types.GenerateContentConfig(
-        temperature=0.4,
-        top_p=0.9,
-        top_k=40
+        system_instruction=system_instructions,
+        tools=[search_tool],
+        temperature=1.0,
+        max_output_tokens=8192,
     )
-    transcription_cfg = types.TranscriptionConfig(
-        language_code="en-US"
+
+    transcription_cfg = types.GenerateContentConfig(
+        system_instruction=system_instructions,
+        temperature=1.0,
+        max_output_tokens=8192,
     )
+
     return generation_cfg, transcription_cfg
 
 # --- Session State ---------------------------------------------------------
@@ -46,7 +58,7 @@ def initialize_session_state():
         st.session_state.observation_report = None
     if 'lesson_analysis' not in st.session_state:
         st.session_state.lesson_analysis = None
-    # NEW: per-session visual preference
+    # NEW: per-session visual preference (used by components.inject_custom_css)
     if 'dark_mode' not in st.session_state:
         st.session_state.dark_mode = False
 
@@ -56,5 +68,5 @@ PAGE_CONFIG = {
     "page_icon": "🎵",
     "layout": "wide",
     # NEW: requested behavior — sidebar starts collapsed
-    "initial_sidebar_state": "collapsed"
+    "initial_sidebar_state": "collapsed",
 }
