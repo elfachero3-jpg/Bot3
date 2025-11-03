@@ -14,19 +14,7 @@ Example format:
 [00:22] Student: Thank you for having us.
 [00:30] <Music>"""
 
-OBSERVER_TRANSCRIPTION_PROMPT = """CRITICAL INSTRUCTIONS:
-1. This is OBSERVER audio - transcribe with timestamps [MM:SS]
-2. Label ALL observer speech with "Observer:"
-3. IGNORE and DO NOT TRANSCRIBE background voices or conversations
-4. Only transcribe the primary observer's voice
-5. When music is present, label with "<Music>"
-6. Do not make up content - transcribe only what you hear
-
-Example format:
-[00:15] Observer: I'm noticing the classroom environment.
-[00:30] Observer: The teacher is now engaging with students.
-[00:45] <Music>"""
-
+...
 # --- Alignment Prompt ------------------------------------------------------
 def get_alignment_prompt(teacher_transcription: str, observer_content: str) -> str:
     """Generate alignment prompt for chronological synchronization"""
@@ -40,45 +28,8 @@ Your task:
 5. For Observer Audio: Keep ONLY "Observer:" labels and "<Music>"
 6. Ensure matching moments appear at similar positions
 7. Do NOT include any introductory text or explanations
-8. ONLY output the transcriptions in the specified format
-9. VERIFY no student names appear in either transcription
-
-TEACHER AUDIO TRANSCRIPTION:
-{teacher_transcription}
-
-OBSERVER CONTENT:
-{observer_content}
-
-Format your response exactly as:
-ALIGNED_TEACHER:
-[transcription here]
-
-ALIGNED_OBSERVER:
-[transcription here]"""
-
-# --- Lesson Analysis Prompt ------------------------------------------------
-def get_lesson_analysis_prompt(transcription: str) -> str:
-    """Generate prompt for analyzing lesson context"""
-    return f"""Based on this classroom transcription, identify:
-1. Type of music class (choir, band, orchestra, general music, etc.)
-2. Grade level (estimate if not obvious)
-3. Key teaching focus or musical concepts being taught
-
-TRANSCRIPTION:
-{transcription[:2000]}
-
-Provide a brief analysis (2-3 sentences)."""
-
-# --- Best Practices Research Prompt ----------------------------------------
-def get_research_prompt(lesson_type: str) -> str:
-    """Generate prompt for researching best practices"""
-    return f"""You are analyzing a music education classroom observation.
-
-LESSON CONTEXT:
-{lesson_type}
-
-Use Google Search to find current best practices, pedagogical approaches, and teaching strategies relevant to this type of music class. Focus on evidence-based teaching methods.
-Summarize key best practices in 4-5 bullet points that will inform the observation report."""
+...
+[00:45] <Music>"""
 
 # --- Report Generation Prompt ----------------------------------------------
 def get_report_generation_prompt(
@@ -115,18 +66,19 @@ CRITICAL INSTRUCTIONS:
 6. Include these sections: {sections_text}
 7. {length_instruction[report_length]}
 8. VERIFY all quoted evidence comes from teacher audio, not observer
+9. Do NOT include any 'Note:' or 'Disclaimer:' lines in your output. The application appends a single disclaimer at the bottom of the exported PDF.
 {criteria_text}
 
 LESSON ANALYSIS:
 {lesson_analysis}
 
-BEST PRACTICES RESEARCH:
+BEST PRACTICES:
 {best_practices}
 
-TEACHER AUDIO TRANSCRIPTION:
+ALIGNED TEACHER TRANSCRIPTION (EVIDENCE SOURCE):
 {aligned_teacher}
 
-OBSERVER OBSERVATIONS:
+ALIGNED OBSERVER NOTES (CONTEXT ONLY):
 {aligned_observer if aligned_observer else "No observer notes provided."}
 
 Generate a professional observation report following the format:
