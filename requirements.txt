@@ -1,0 +1,5 @@
+# Core dependencies for Music Teacher Observation Assistant
+google-genai>=1.26.0      # Google GenAI SDK with Search grounding
+streamlit>=1.49.0         # Streamlit framework
+pillow>=11.3.0            # Image processing (PIL)
+fpdf2>=2.8.1              # Enhanced PDF generation with better formatting
