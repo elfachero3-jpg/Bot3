@@ -4,180 +4,111 @@ from datetime import datetime
 
 # --- Custom CSS Styling ----------------------------------------------------
 def inject_custom_css():
-    """Inject custom CSS for app styling"""
+    """Inject custom CSS for app styling - matches old version"""
     st.markdown("""
     <style>
     @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
     
     /* Main app background */
     .stApp { 
-        background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%); 
+        background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%); 
     }
     
     /* Header styling */
     .main-header { 
         text-align: center; 
-        color: #1f2937; 
-        padding: 20px 0 10px 0; 
+        color: #2c3e50; 
+        padding: 20px 0 30px 0; 
         animation: fadeInDown 0.8s ease; 
     }
     .main-header h1 { 
         font-size: 2.5rem; 
         font-weight: 600; 
-        margin-bottom: 10px;
-        color: #1f2937;
+        margin-bottom: 10px; 
     }
-    .main-header .subtitle { 
+    .main-header p { 
         font-size: 1.1rem; 
-        color: #6b7280; 
-        margin-bottom: 5px;
+        opacity: 0.85; 
+        color: #546e7a; 
     }
-    .main-header .creator { 
-        font-size: 0.95rem; 
-        color: #9ca3af; 
-        margin-top: 8px;
-    }
-    
-    /* Info banner styling */
-    .info-banner {
-        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-        border-left: 4px solid #3b82f6;
-        padding: 16px 20px;
-        border-radius: 8px;
-        margin: 20px 0 30px 0;
-        color: #1e40af;
-        font-size: 1rem;
-        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
-    }
-    .info-banner strong {
-        color: #1e3a8a;
-        font-weight: 600;
-    }
-    
-    /* Section headers with icons */
-    .section-header {
-        display: flex;
-        align-items: center;
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: #374151;
-        margin: 30px 0 20px 0;
-        padding-bottom: 10px;
-        border-bottom: 2px solid #e5e7eb;
-    }
-    .section-header .icon {
-        margin-right: 12px;
-        font-size: 1.6rem;
-    }
-    
-    /* Audio section styling */
-    .audio-section-title {
-        display: flex;
-        align-items: center;
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: #4b5563;
-        margin-bottom: 8px;
-    }
-    .audio-section-title .icon {
-        margin-right: 10px;
-        font-size: 1.3rem;
-    }
-    .audio-description {
-        color: #6b7280;
-        font-size: 0.95rem;
-        margin-bottom: 12px;
+    .creator-text { 
+        font-size: 0.9rem; 
+        margin-top: 5px; 
+        opacity: 0.75; 
+        color: #607d8b; 
     }
     
     /* Button styling */
     .stButton > button { 
-        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        background: #37474f; 
         color: white; 
-        border-radius: 10px; 
         border: none; 
-        padding: 0.7rem 1.2rem;
-        font-weight: 600;
-        font-size: 1.05rem;
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        padding: 15px 40px; 
+        font-size: 1.1rem; 
+        font-weight: 600; 
+        border-radius: 8px; 
+        width: 100%; 
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); 
         transition: all 0.3s ease; 
     }
     .stButton > button:hover { 
-        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        background: #455a64; 
         transform: translateY(-2px); 
-        box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4); 
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); 
     }
     
-    /* Download buttons */
+    /* Download button styling */
     .stDownloadButton > button { 
-        width: 100%;
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        box-shadow: 0 3px 10px rgba(16, 185, 129, 0.3);
+        background: #2e7d32 !important; 
+        color: white !important; 
+        border: none; 
+        padding: 15px 40px; 
+        font-size: 1.1rem; 
+        font-weight: 600; 
+        border-radius: 8px; 
+        width: 100%; 
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); 
     }
-    .stDownloadButton > button:hover {
-        background: linear-gradient(135deg, #059669 0%, #047857 100%);
-        box-shadow: 0 5px 14px rgba(16, 185, 129, 0.4);
-    }
-    
-    /* Text input styling */
-    .stTextInput > div > div > input {
-        border-radius: 8px;
-        border: 2px solid #e5e7eb;
-        padding: 0.6rem 0.8rem;
-    }
-    .stTextInput > div > div > input:focus {
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    .stDownloadButton > button:hover { 
+        background: #388e3c !important; 
+        transform: translateY(-2px); 
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); 
     }
     
-    /* File uploader styling */
-    .stFileUploader {
-        border-radius: 10px;
+    /* Input status box */
+    .input-status { 
+        background: #ffffff; 
+        padding: 15px; 
+        border-radius: 8px; 
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+        margin: 10px 0; 
     }
     
-    /* Text area styling */
-    .stTextArea textarea { 
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-        border-radius: 8px;
-        border: 2px solid #e5e7eb;
-    }
-    .stTextArea textarea:focus {
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
+    /* Hide Streamlit branding */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
     
-    /* Expander styling */
-    .streamlit-expanderHeader {
-        background-color: #f9fafb;
-        border-radius: 8px;
-        font-weight: 600;
-    }
-    
-    /* Divider styling */
-    hr {
-        margin: 30px 0;
-        border: none;
-        border-top: 2px solid #e5e7eb;
+    /* Animation */
+    @keyframes fadeInDown { 
+        from { opacity: 0; transform: translateY(-30px); } 
+        to { opacity: 1; transform: translateY(0); } 
     }
     </style>
     """, unsafe_allow_html=True)
 
 # --- Header ----------------------------------------------------------------
 def render_header():
-    """Render app header matching old design"""
+    """Render app header matching old design exactly"""
     st.markdown("""
     <div class="main-header">
-        <h1>🎵 Music Teacher Observation Assistant</h1>
-        <div class="subtitle">AI-Powered Classroom Observation & Feedback Tool</div>
-        <div class="creator">Created by Brett Taylor</div>
+      <h1><i class="fas fa-music"></i> Music Teacher Observation Assistant</h1>
+      <p>AI-Powered Classroom Observation & Feedback Tool</p>
+      <p class="creator-text">Created by Brett Taylor</p>
     </div>
     """, unsafe_allow_html=True)
     
-    # Info banner
-    st.markdown("""
-    <div class="info-banner">
-        💡 <strong>Getting Started:</strong> Provide at least one input source (teacher audio, observer audio, or observer notes) to generate an observation report.
-    </div>
-    """, unsafe_allow_html=True)
+    # Info message
+    st.info("💡 **Getting Started:** Provide at least one input source (teacher audio, observer audio, or observer notes) to generate an observation report.")
 
 # --- Sidebar Config ---------------------------------------------------------
 def render_sidebar_config():
@@ -220,96 +151,78 @@ def render_sidebar_config():
 # --- Name Inputs ------------------------------------------------------------
 def render_name_inputs():
     """Render observation data section with name inputs"""
-    st.markdown("""
-    <div class="section-header">
-        <span class="icon">📋</span>
-        <span>Observation Data</span>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown("## 📋 Observation Data")
     
-    c1, c2 = st.columns(2)
-    with c1:
+    col_name1, col_name2 = st.columns(2)
+    with col_name1:
         st.text_input(
             "👤 Teacher Name", 
             key="teacher_name", 
             placeholder="Enter teacher's name (optional)"
         )
-    with c2:
+    with col_name2:
         st.text_input(
             "👤 Observer Name", 
             key="observer_name", 
             placeholder="Enter observer's name (optional)"
         )
+    
+    st.markdown("---")
 
 # --- Audio Uploads ----------------------------------------------------------
 def render_audio_uploads():
-    """Render audio upload widgets with styled headers"""
-    st.markdown("<br>", unsafe_allow_html=True)
+    """Render audio upload widgets matching old layout exactly"""
+    col1, col2 = st.columns(2)
     
-    c1, c2 = st.columns(2)
-    
-    with c1:
-        st.markdown("""
-        <div class="audio-section-title">
-            <span class="icon">🎙️</span>
-            <span>Teacher Audio (Optional)</span>
-        </div>
-        <div class="audio-description">Upload classroom audio recording</div>
-        """, unsafe_allow_html=True)
-        
+    with col1:
+        st.markdown("### 📁 Teacher Audio (Optional)")
         teacher_file = st.file_uploader(
-            "teacher_audio_uploader",
+            "Upload classroom audio recording",
             type=["mp3", "wav", "m4a", "flac", "ogg", "webm"],
-            key="teacher_audio",
-            label_visibility="collapsed"
+            key="teacher_upload",
+            help="Primary classroom recording with teacher and student interactions"
         )
+        if teacher_file:
+            file_size = teacher_file.size / (1024 * 1024)
+            st.success(f"✅ **{teacher_file.name}** ({file_size:.2f} MB)")
+            st.audio(teacher_file, format=f'audio/{teacher_file.name.split(".")[-1]}')
     
-    with c2:
-        st.markdown("""
-        <div class="audio-section-title">
-            <span class="icon">🎙️</span>
-            <span>Observer Audio (Optional)</span>
-        </div>
-        <div class="audio-description">Upload observer's verbal notes</div>
-        """, unsafe_allow_html=True)
-        
+    with col2:
+        st.markdown("### 📁 Observer Audio (Optional)")
         observer_file = st.file_uploader(
-            "observer_audio_uploader",
+            "Upload observer's verbal notes",
             type=["mp3", "wav", "m4a", "flac", "ogg", "webm"],
-            key="observer_audio",
-            label_visibility="collapsed"
+            key="observer_upload",
+            help="Observer's audio commentary during the observation"
         )
+        if observer_file:
+            file_size = observer_file.size / (1024 * 1024)
+            st.success(f"✅ **{observer_file.name}** ({file_size:.2f} MB)")
+            st.audio(observer_file, format=f'audio/{observer_file.name.split(".")[-1]}')
+    
+    st.markdown("---")
     
     return teacher_file, observer_file
 
 # --- Text Inputs ------------------------------------------------------------
 def render_text_inputs():
     """Render observer notes and evaluation criteria inputs"""
-    st.markdown("<br>", unsafe_allow_html=True)
+    col3, col4 = st.columns(2)
     
-    with st.expander("📝 Observer Notes / Evaluation Criteria", expanded=False):
-        st.markdown("You can paste observer notes, upload audio, and/or provide evaluation criteria.")
-        
-        notes_method = st.radio(
-            "Observer notes source",
-            ["Paste Text", "Upload Audio"],
-            horizontal=True
+    with col3:
+        st.markdown("### 📝 Observer Text Notes (Optional)")
+        observer_notes = st.text_area(
+            "Written observation notes",
+            placeholder="Enter any written notes from the observation...",
+            height=200,
+            help="Additional written observations or comments"
         )
-        
-        observer_notes = ""
-        if notes_method == "Paste Text":
-            observer_notes = st.text_area(
-                "Paste observer notes (optional)",
-                placeholder="Enter your notes here...",
-                height=200,
-            )
-        else:
-            st.info("👆 Upload the observer audio in the 'Observer Audio' section above.")
-        
-        st.markdown("---")
+    
+    with col4:
+        st.markdown("### 🎯 Evaluation Criteria (Optional)")
         criteria_method = st.radio(
-            "Evaluation criteria source",
-            ["Paste Text", "Upload Document"],
+            "Choose input method:", 
+            ["Paste Text", "Upload Document"], 
             horizontal=True
         )
         
@@ -338,6 +251,33 @@ def render_text_inputs():
     return observer_notes, evaluation_criteria
 
 
+# --- Input Status Display --------------------------------------------------
+def render_input_status(teacher_file, observer_file, observer_notes):
+    """Render input status metrics"""
+    st.markdown("---")
+    st.markdown("### 📊 Input Status")
+    
+    status_col1, status_col2, status_col3 = st.columns(3)
+    
+    with status_col1:
+        status_icon = "✅" if teacher_file else "❌"
+        st.metric("Teacher Audio", status_icon)
+    
+    with status_col2:
+        status_icon = "✅" if observer_file else "❌"
+        st.metric("Observer Audio", status_icon)
+    
+    with status_col3:
+        status_icon = "✅" if (observer_notes and observer_notes.strip()) else "❌"
+        st.metric("Observer Notes", status_icon)
+    
+    # Contextual help message
+    if not teacher_file and not observer_file and not (observer_notes and observer_notes.strip()):
+        st.warning("⚠️ No inputs detected. Please provide at least one audio file or observer notes to continue.")
+    elif not teacher_file:
+        st.info("ℹ️ **Note:** Report will be based solely on observer perspective without classroom audio evidence.")
+
+
 # --- Download Components ---------------------------------------------------
 def render_downloads(settings):
     """
@@ -352,6 +292,7 @@ def render_downloads(settings):
         create_text_fallback,
         create_transcript_text_fallback
     )
+    import re
     
     st.markdown("---")
     st.markdown("## 📥 Download Reports")
@@ -363,23 +304,65 @@ def render_downloads(settings):
     # Generate timestamp
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     date_time_formatted = datetime.now().strftime('%B %d, %Y at %I:%M %p')
-    report_date_formatted = datetime.now().strftime('%B %d, %Y')
+    date_formatted = datetime.now().strftime('%B %d, %Y')
 
-    col1, col2 = st.columns(2)
+    col_dl1, col_dl2 = st.columns(2)
 
     # Get name inputs from session state or use defaults
     teacher_name = getattr(st.session_state, 'teacher_name', 'Not specified')
     observer_name = getattr(st.session_state, 'observer_name', 'Not specified')
 
-    with col1:
+    with col_dl1:
         # Primary download: Observation Report
         try:
+            # CRITICAL: Clean any duplicate header text from AI output
+            cleaned_report = st.session_state.observation_report
+            
+            # Remove any AI-generated headers that duplicate what we add in PDF
+            cleaned_report = re.sub(
+                r'^\*{0,2}Music Teacher Observation Report\*{0,2}\s*\n',
+                '',
+                cleaned_report,
+                flags=re.IGNORECASE | re.MULTILINE
+            )
+            
+            # Remove date lines that match our format
+            cleaned_report = re.sub(
+                r'^[A-Z][a-z]+ \d{1,2},? \d{4}\s*\n',
+                '',
+                cleaned_report,
+                flags=re.MULTILINE
+            )
+            
+            # Remove Teacher: and Observer: lines if at the start
+            cleaned_report = re.sub(
+                r'^Teacher:\s*.+?\n',
+                '',
+                cleaned_report,
+                flags=re.IGNORECASE | re.MULTILINE,
+                count=1
+            )
+            cleaned_report = re.sub(
+                r'^Observer:\s*.+?\n',
+                '',
+                cleaned_report,
+                flags=re.IGNORECASE | re.MULTILINE,
+                count=1
+            )
+            
+            # Remove any leading whitespace
+            cleaned_report = cleaned_report.lstrip()
+            
+            # Determine if we have teacher audio (check session state)
+            has_teacher_audio = hasattr(st.session_state, 'teacher_transcription') and st.session_state.teacher_transcription
+            
             report_pdf_bytes = create_observation_report_pdf(
-                report_text=st.session_state.observation_report,
-                teacher_name=teacher_name,
-                observer_name=observer_name,
-                date_time=report_date_formatted,
+                report_text=cleaned_report,
+                teacher_name=teacher_name if teacher_name else "Not specified",
+                observer_name=observer_name if observer_name else "Not specified",
+                date_time=date_formatted,
                 report_length=settings['report_length'].lower(),
+                has_teacher_audio=has_teacher_audio,
             )
             st.download_button(
                 label="⬇️ Download Observation Report (PDF)",
@@ -396,7 +379,7 @@ def render_downloads(settings):
                 st.session_state.observation_report,
                 teacher_name,
                 observer_name,
-                report_date_formatted
+                date_formatted
             )
             st.download_button(
                 label="⬇️ Download Observation Report (TXT - Fallback)",
@@ -406,20 +389,24 @@ def render_downloads(settings):
                 use_container_width=True
             )
 
-    with col2:
+    with col_dl2:
         # Secondary download: Full Transcript
-        if settings['include_transcript'] and st.session_state.aligned_teacher:
+        if settings['include_transcript'] and (st.session_state.aligned_teacher or st.session_state.aligned_observer):
             try:
-                if st.session_state.aligned_observer:
+                # Determine which PDF format to use based on old logic
+                if st.session_state.aligned_teacher and st.session_state.aligned_observer:
+                    # Both sources: dual column
                     transcript_pdf_bytes = create_dual_column_pdf(
                         st.session_state.aligned_teacher,
                         st.session_state.aligned_observer
                     )
                 else:
+                    # Single source: use dual column with empty for missing side
                     transcript_pdf_bytes = create_dual_column_pdf(
-                        st.session_state.aligned_teacher,
-                        ""
+                        st.session_state.aligned_teacher if st.session_state.aligned_teacher else "",
+                        st.session_state.aligned_observer if st.session_state.aligned_observer else ""
                     )
+                
                 st.download_button(
                     label="⬇️ Download Full Transcript (PDF)",
                     data=transcript_pdf_bytes,
@@ -431,11 +418,25 @@ def render_downloads(settings):
                 st.error(f"❌ Transcript PDF generation failed: {str(e)}")
                 st.warning("📄 Downloading text version as fallback...")
                 
-                transcript_text = create_transcript_text_fallback(
-                    st.session_state.aligned_teacher,
-                    st.session_state.aligned_observer if st.session_state.aligned_observer else "",
-                    date_time_formatted
-                )
+                # Text fallback for transcript
+                transcript_text = f"""TRANSCRIPTION
+Generated: {date_formatted}
+{'='*80}
+"""
+                if st.session_state.aligned_teacher:
+                    transcript_text += f"""TEACHER AUDIO:
+{'='*80}
+{st.session_state.aligned_teacher}
+"""
+                if st.session_state.aligned_observer:
+                    transcript_text += f"""{'='*80}
+OBSERVER AUDIO/NOTES:
+{'='*80}
+{st.session_state.aligned_observer}
+"""
+                transcript_text += f"""{'='*80}
+Note: This transcription was created by AI. Please verify all important information for accuracy.
+"""
                 st.download_button(
                     label="⬇️ Download Full Transcript (TXT - Fallback)",
                     data=transcript_text,
@@ -452,8 +453,8 @@ def render_footer():
     """Render app footer"""
     st.markdown("---")
     st.markdown(
-        "<p style='text-align: center; color: #6b7280; font-size: 0.9rem;'>"
-        "Powered by Gemini Flash • Music Teacher Observation Assistant v2.1"
+        "<p style='text-align: center; color: #546e7a; opacity: 0.8;'>"
+        "Powered by Gemini Flash • Music Teacher Observation Assistant v2.3"
         "</p>",
         unsafe_allow_html=True
     )
