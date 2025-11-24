@@ -144,7 +144,7 @@ def create_observation_report_pdf(
         pdf = FPDF()
         pdf.add_page()
         pdf.set_margins(12, 12, 12)
-        pdf.set_auto_page_break(auto=True, margin=15)
+        pdf.set_auto_page_break(auto=True, margin=12)
 
         # Sanitize inputs
         report_text = sanitize_text_for_pdf(report_text)
@@ -237,10 +237,10 @@ def create_observation_report_pdf(
                 pdf.set_x(pdf.l_margin)
                 pdf.multi_cell(usable, line_height, line)
 
-        # Single footer disclaimer at bottom of final page
+        # Add disclaimer immediately after content (not at bottom of page)
+        pdf.ln(8)  # Small space before disclaimer
         pdf.set_font("Arial", "I", 9)
         pdf.set_text_color(100, 100, 100)
-        pdf.set_y(-18)
         pdf.set_x(pdf.l_margin)
         pdf.multi_cell(
             usable,
@@ -383,10 +383,10 @@ def create_dual_column_pdf(teacher_text: str, observer_text: str) -> bytes:
             pdf.set_y(max(teacher_y_end, observer_y_end))
             pdf.ln(2)
 
-        # Single footer disclaimer at bottom of final page
+        # Add disclaimer immediately after content
+        pdf.ln(5)
         pdf.set_font("Arial", "I", 8)
         pdf.set_text_color(100, 100, 100)
-        pdf.set_y(-15)
         pdf.set_x(12)
         usable_width = pdf.w - 24
         pdf.multi_cell(
