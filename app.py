@@ -13,7 +13,6 @@ from ui.components import (
     render_name_inputs,
     render_audio_uploads,
     render_text_inputs,
-    render_input_status,
     render_downloads,
     render_footer,
 )
@@ -54,11 +53,6 @@ teacher_file, observer_file = render_audio_uploads()
 
 # Text inputs
 observer_notes, evaluation_criteria = render_text_inputs()
-
-# Input status display
-render_input_status(teacher_file, observer_file, observer_notes)
-
-st.markdown("---")
 
 # --- Input Validation ------------------------------------------------------
 def validate_inputs(teacher_file, observer_file, observer_notes):
@@ -107,6 +101,8 @@ def calculate_processing_steps(teacher_file, observer_file, observer_notes):
     return steps
 
 # --- Processing Button ----------------------------------------------------
+st.markdown("---")
+
 # Validate inputs before showing button
 is_valid, validation_error, input_summary = validate_inputs(teacher_file, observer_file, observer_notes)
 
@@ -269,6 +265,7 @@ CRITICAL FORMATTING INSTRUCTIONS - READ CAREFULLY:
 7. Use quotations ONLY from teacher audio as evidence (if available)
 8. Be generous with praise but clear with constructive criticism
 9. Maintain professional, neutral language throughout
+10. Do NOT include any 'Note:' or 'Disclaimer:' lines in your output. The application adds a single disclaimer in the PDF footer.
 
 OUTPUT FORMAT EXAMPLE (follow this exact style):
 LESSON SUMMARY:
@@ -312,7 +309,7 @@ TEACHER AUDIO TRANSCRIPTION:
 OBSERVER OBSERVATIONS:
 {st.session_state.aligned_observer if st.session_state.aligned_observer else "No observer notes provided."}
 
-REMEMBER: Output plain text only. No markdown. No asterisks. No brackets. The formatting will be applied during PDF generation."""
+REMEMBER: Output plain text only. No markdown. No asterisks. No brackets. The formatting will be applied during PDF generation. Do NOT include any 'Note:' or 'Disclaimer:' text."""
                 
                 response = client.models.generate_content(
                     model="gemini-flash-latest",
