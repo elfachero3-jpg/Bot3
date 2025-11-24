@@ -22,9 +22,14 @@ def load_developer_prompt():
     with open("identity.txt", "r", encoding="utf-8") as f:
         return f.read()
 
+def load_solo_prompt():
+    """Load system/developer prompt for solo teaching mode from identity_solo.txt"""
+    with open("identity_solo.txt", "r", encoding="utf-8") as f:
+        return f.read()
+
 # --- Generation Configs ----------------------------------------------------
 def get_generation_configs():
-    """Create and return generation configurations"""
+    """Create and return generation configurations for observation mode"""
     system_instructions = load_developer_prompt()
     search_tool = types.Tool(google_search=types.GoogleSearch())
 
@@ -43,9 +48,22 @@ def get_generation_configs():
 
     return generation_cfg, transcription_cfg
 
+def get_solo_config():
+    """Create and return generation configuration for solo teaching mode"""
+    system_instructions = load_solo_prompt()
+    
+    solo_cfg = types.GenerateContentConfig(
+        system_instruction=system_instructions,
+        temperature=1.0,
+        max_output_tokens=8192,
+    )
+    
+    return solo_cfg
+
 # --- Session State ---------------------------------------------------------
 def initialize_session_state():
     """Initialize all session state variables"""
+    # Observation mode states
     if 'teacher_transcription' not in st.session_state:
         st.session_state.teacher_transcription = None
     if 'observer_transcription' not in st.session_state:
@@ -58,7 +76,16 @@ def initialize_session_state():
         st.session_state.observation_report = None
     if 'lesson_analysis' not in st.session_state:
         st.session_state.lesson_analysis = None
-    # NEW: per-session visual preference (used by components.inject_custom_css)
+    
+    # Solo teaching mode states
+    if 'solo_transcription' not in st.session_state:
+        st.session_state.solo_transcription = None
+    if 'solo_chat_history' not in st.session_state:
+        st.session_state.solo_chat_history = []
+    if 'solo_audio_processed' not in st.session_state:
+        st.session_state.solo_audio_processed = False
+    
+    # Visual preference
     if 'dark_mode' not in st.session_state:
         st.session_state.dark_mode = False
 
@@ -69,4 +96,3 @@ PAGE_CONFIG = {
     "layout": "wide",
     "initial_sidebar_state": "collapsed",
 }
-
