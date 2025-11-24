@@ -4,7 +4,7 @@ from datetime import datetime
 
 # --- Custom CSS Styling ----------------------------------------------------
 def inject_custom_css():
-    """Inject custom CSS for app styling - with Chrome-style tabs"""
+    """Inject custom CSS for app styling - with seamless Chrome-style tabs"""
     st.markdown("""
     <style>
     @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
@@ -38,13 +38,14 @@ def inject_custom_css():
         color: #607d8b; 
     }
     
-    /* CHROME-STYLE TAB STYLING */
+    /* CHROME-STYLE TAB STYLING WITH SEAMLESS FLOW */
     .stTabs [data-baseweb="tab-list"] {
         gap: 2px;
         background-color: #dadce0;
         padding: 8px 8px 0 8px;
         border-radius: 8px 8px 0 0;
         margin-bottom: 0;
+        border-bottom: none;
     }
     
     .stTabs [data-baseweb="tab"] {
@@ -72,10 +73,22 @@ def inject_custom_css():
         color: #202124 !important;
         font-weight: 600;
         border-radius: 8px 8px 0 0;
-        box-shadow: 
-            0 1px 3px rgba(0,0,0,0.12),
-            0 1px 2px rgba(0,0,0,0.08);
+        box-shadow: none;
         z-index: 10;
+        border-bottom: 2px solid #ffffff;
+    }
+    
+    /* Remove the horizontal line below tabs */
+    .stTabs [data-baseweb="tab-list"]::after {
+        display: none;
+    }
+    
+    .stTabs [data-baseweb="tab-border"] {
+        display: none;
+    }
+    
+    .stTabs [data-baseweb="tab-highlight"] {
+        display: none;
     }
     
     .stTabs [data-baseweb="tab-panel"] {
