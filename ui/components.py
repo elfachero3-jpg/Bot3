@@ -4,7 +4,7 @@ from datetime import datetime
 
 # --- Custom CSS Styling ----------------------------------------------------
 def inject_custom_css():
-    """Inject custom CSS for app styling - matches old version"""
+    """Inject custom CSS for app styling - with manila folder/browser-style tabs"""
     st.markdown("""
     <style>
     @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
@@ -18,7 +18,7 @@ def inject_custom_css():
     .main-header { 
         text-align: center; 
         color: #2c3e50; 
-        padding: 20px 0 30px 0; 
+        padding: 20px 0 20px 0; 
         animation: fadeInDown 0.8s ease; 
     }
     .main-header h1 { 
@@ -36,6 +36,79 @@ def inject_custom_css():
         margin-top: 5px; 
         opacity: 0.75; 
         color: #607d8b; 
+    }
+    
+    /* MANILA FOLDER / BROWSER-STYLE TAB STYLING */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 4px;
+        background-color: transparent;
+        padding: 0;
+        border-bottom: 3px solid #37474f;
+        margin-bottom: 0;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        height: 65px;
+        padding: 0 35px;
+        background: linear-gradient(to bottom, #d4c5a9 0%, #c9b896 100%);
+        border-radius: 12px 12px 0 0;
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #5d4e37;
+        border: 2px solid #a89968;
+        border-bottom: none;
+        position: relative;
+        margin-bottom: -3px;
+        transition: all 0.3s ease;
+        box-shadow: 
+            inset 0 1px 0 rgba(255,255,255,0.3),
+            0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .stTabs [data-baseweb="tab"]::before {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(to bottom, #d4c5a9 0%, #c9b896 100%);
+    }
+    
+    .stTabs [data-baseweb="tab"]:hover {
+        background: linear-gradient(to bottom, #dcd0b8 0%, #d1c4a4 100%);
+        color: #4a3d28;
+        transform: translateY(-3px);
+        box-shadow: 
+            inset 0 1px 0 rgba(255,255,255,0.4),
+            0 4px 8px rgba(0,0,0,0.15);
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(to bottom, #ffffff 0%, #f8f8f8 100%) !important;
+        color: #2c3e50 !important;
+        border: 2px solid #37474f;
+        border-bottom: none !important;
+        height: 70px;
+        transform: translateY(-5px);
+        z-index: 10;
+        box-shadow: 
+            0 -2px 8px rgba(0,0,0,0.1),
+            inset 0 1px 0 rgba(255,255,255,0.8);
+    }
+    
+    .stTabs [aria-selected="true"]::before {
+        background: #ffffff;
+        height: 5px;
+    }
+    
+    .stTabs [data-baseweb="tab-panel"] {
+        padding-top: 30px;
+        background: #ffffff;
+        border-radius: 0 0 12px 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        padding: 30px 20px;
+        margin-top: -3px;
     }
     
     /* Button styling */
