@@ -4,168 +4,363 @@ from datetime import datetime
 
 # --- Custom CSS Styling ----------------------------------------------------
 def inject_custom_css():
-    """Inject custom CSS for app styling - with seamless Chrome-style tabs"""
-    st.markdown("""
-    <style>
-    @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+    """Inject custom CSS for app styling - with seamless Chrome-style tabs and theme support"""
     
-    /* Main app background */
-    .stApp { 
-        background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%); 
-    }
+    # Get current theme from session state
+    is_dark = st.session_state.get('dark_mode', False)
     
-    /* Header styling */
-    .main-header { 
-        text-align: center; 
-        color: #2c3e50; 
-        padding: 20px 0 20px 0; 
-        animation: fadeInDown 0.8s ease; 
-    }
-    .main-header h1 { 
-        font-size: 2.5rem; 
-        font-weight: 600; 
-        margin-bottom: 10px; 
-    }
-    .main-header p { 
-        font-size: 1.1rem; 
-        opacity: 0.85; 
-        color: #546e7a; 
-    }
-    .creator-text { 
-        font-size: 0.9rem; 
-        margin-top: 5px; 
-        opacity: 0.75; 
-        color: #607d8b; 
-    }
-    
-    /* CHROME-STYLE TAB STYLING WITH SEAMLESS FLOW */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 2px;
-        background-color: #dadce0;
-        padding: 8px 8px 0 8px;
-        border-radius: 8px 8px 0 0;
-        margin-bottom: 0;
-        border-bottom: none;
-    }
-    
-    .stTabs [data-baseweb="tab"] {
-        height: 60px;
-        padding: 0 30px;
-        background-color: #dadce0;
-        border-radius: 8px 8px 0 0;
-        font-size: 2rem;
-        font-weight: 500;
-        color: #5f6368;
-        border: none;
-        position: relative;
-        margin-bottom: 0;
-        transition: all 0.2s ease;
-        box-shadow: none;
-    }
-    
-    .stTabs [data-baseweb="tab"]:hover {
-        background-color: #e8eaed;
-        color: #202124;
-    }
-    
-    .stTabs [aria-selected="true"] {
-        background-color: #ffffff !important;
-        color: #202124 !important;
-        font-weight: 600;
-        border-radius: 8px 8px 0 0;
-        box-shadow: none;
-        z-index: 10;
-        border-bottom: 2px solid #ffffff;
-    }
-    
-    /* Remove the horizontal line below tabs */
-    .stTabs [data-baseweb="tab-list"]::after {
-        display: none;
-    }
-    
-    .stTabs [data-baseweb="tab-border"] {
-        display: none;
-    }
-    
-    .stTabs [data-baseweb="tab-highlight"] {
-        display: none;
-    }
-    
-    .stTabs [data-baseweb="tab-panel"] {
-        padding-top: 30px;
-        background: #ffffff;
-        border-radius: 0 8px 8px 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        padding: 30px 20px;
-        margin-top: 0;
-    }
-    
-    /* Button styling */
-    .stButton > button { 
-        background: #37474f; 
-        color: white; 
-        border: none; 
-        padding: 15px 40px; 
-        font-size: 1.1rem; 
-        font-weight: 600; 
-        border-radius: 8px; 
-        width: 100%; 
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); 
-        transition: all 0.3s ease; 
-    }
-    .stButton > button:hover { 
-        background: #455a64; 
-        transform: translateY(-2px); 
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); 
-    }
-    
-    /* Download button styling */
-    .stDownloadButton > button { 
-        background: #2e7d32 !important; 
-        color: white !important; 
-        border: none; 
-        padding: 15px 40px; 
-        font-size: 1.1rem; 
-        font-weight: 600; 
-        border-radius: 8px; 
-        width: 100%; 
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); 
-    }
-    .stDownloadButton > button:hover { 
-        background: #388e3c !important; 
-        transform: translateY(-2px); 
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); 
-    }
-    
-    /* Input status box */
-    .input-status { 
-        background: #ffffff; 
-        padding: 15px; 
-        border-radius: 8px; 
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
-        margin: 10px 0; 
-    }
-    
-    /* Chat message styling */
-    .chat-message {
-        padding: 1rem;
-        border-radius: 0.5rem;
-        margin-bottom: 1rem;
-        display: flex;
-        flex-direction: column;
-    }
-    
-    /* Hide Streamlit branding */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    
-    /* Animation */
-    @keyframes fadeInDown { 
-        from { opacity: 0; transform: translateY(-30px); } 
-        to { opacity: 1; transform: translateY(0); } 
-    }
-    </style>
-    """, unsafe_allow_html=True)
+    if is_dark:
+        # DARK MODE CSS
+        st.markdown("""
+        <style>
+        @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+        
+        /* Main app background - DARK */
+        .stApp { 
+            background: linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%); 
+            color: #e0e0e0;
+        }
+        
+        /* Header styling - DARK */
+        .main-header { 
+            text-align: center; 
+            color: #e0e0e0; 
+            padding: 20px 0 20px 0; 
+            animation: fadeInDown 0.8s ease; 
+        }
+        .main-header h1 { 
+            font-size: 2.5rem; 
+            font-weight: 600; 
+            margin-bottom: 10px;
+            color: #e0e0e0;
+        }
+        .main-header p { 
+            font-size: 1.1rem; 
+            opacity: 0.85; 
+            color: #b0b0b0; 
+        }
+        .creator-text { 
+            font-size: 0.9rem; 
+            margin-top: 5px; 
+            opacity: 0.75; 
+            color: #909090; 
+        }
+        
+        /* CHROME-STYLE TAB STYLING - DARK MODE */
+        .stTabs [data-baseweb="tab-list"] {
+            gap: 2px;
+            background-color: #3a3a3a;
+            padding: 8px 8px 0 8px;
+            border-radius: 8px 8px 0 0;
+            margin-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .stTabs [data-baseweb="tab"] {
+            height: 60px;
+            padding: 0 30px;
+            background-color: #3a3a3a;
+            border-radius: 8px 8px 0 0;
+            font-size: 2.5rem;
+            font-weight: 500;
+            color: #b0b0b0;
+            border: none;
+            position: relative;
+            margin-bottom: 0;
+            transition: all 0.2s ease;
+            box-shadow: none;
+        }
+        
+        .stTabs [data-baseweb="tab"]:hover {
+            background-color: #4a4a4a;
+            color: #e0e0e0;
+        }
+        
+        .stTabs [aria-selected="true"] {
+            background-color: #2d2d2d !important;
+            color: #ffffff !important;
+            font-weight: 600;
+            border-radius: 8px 8px 0 0;
+            box-shadow: none;
+            z-index: 10;
+            border-bottom: 2px solid #2d2d2d;
+        }
+        
+        /* Remove the horizontal line below tabs */
+        .stTabs [data-baseweb="tab-list"]::after {
+            display: none;
+        }
+        
+        .stTabs [data-baseweb="tab-border"] {
+            display: none;
+        }
+        
+        .stTabs [data-baseweb="tab-highlight"] {
+            display: none;
+        }
+        
+        .stTabs [data-baseweb="tab-panel"] {
+            padding-top: 30px;
+            background: #2d2d2d;
+            border-radius: 0 8px 8px 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            padding: 30px 20px;
+            margin-top: 0;
+        }
+        
+        /* Button styling - DARK */
+        .stButton > button { 
+            background: #4a4a4a; 
+            color: #e0e0e0; 
+            border: none; 
+            padding: 15px 40px; 
+            font-size: 1.1rem; 
+            font-weight: 600; 
+            border-radius: 8px; 
+            width: 100%; 
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); 
+            transition: all 0.3s ease; 
+        }
+        .stButton > button:hover { 
+            background: #5a5a5a; 
+            transform: translateY(-2px); 
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); 
+        }
+        
+        /* Download button styling - DARK */
+        .stDownloadButton > button { 
+            background: #2e7d32 !important; 
+            color: white !important; 
+            border: none; 
+            padding: 15px 40px; 
+            font-size: 1.1rem; 
+            font-weight: 600; 
+            border-radius: 8px; 
+            width: 100%; 
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); 
+        }
+        .stDownloadButton > button:hover { 
+            background: #388e3c !important; 
+            transform: translateY(-2px); 
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); 
+        }
+        
+        /* Text and input styling - DARK */
+        .stTextInput > div > div > input,
+        .stTextArea > div > div > textarea {
+            background-color: #3a3a3a;
+            color: #e0e0e0;
+            border-color: #4a4a4a;
+        }
+        
+        /* Sidebar styling - DARK */
+        section[data-testid="stSidebar"] {
+            background-color: #2d2d2d;
+        }
+        
+        section[data-testid="stSidebar"] * {
+            color: #e0e0e0 !important;
+        }
+        
+        /* Input status box - DARK */
+        .input-status { 
+            background: #3a3a3a; 
+            padding: 15px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3); 
+            margin: 10px 0; 
+        }
+        
+        /* Chat message styling - DARK */
+        .chat-message {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            background-color: #3a3a3a;
+        }
+        
+        /* Info/Warning/Error boxes - DARK */
+        .stAlert {
+            background-color: #3a3a3a;
+            color: #e0e0e0;
+        }
+        
+        /* Hide Streamlit branding */
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+        
+        /* Animation */
+        @keyframes fadeInDown { 
+            from { opacity: 0; transform: translateY(-30px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        </style>
+        """, unsafe_allow_html=True)
+    else:
+        # LIGHT MODE CSS (ORIGINAL)
+        st.markdown("""
+        <style>
+        @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+        
+        /* Main app background */
+        .stApp { 
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%); 
+        }
+        
+        /* Header styling */
+        .main-header { 
+            text-align: center; 
+            color: #2c3e50; 
+            padding: 20px 0 20px 0; 
+            animation: fadeInDown 0.8s ease; 
+        }
+        .main-header h1 { 
+            font-size: 2.5rem; 
+            font-weight: 600; 
+            margin-bottom: 10px; 
+        }
+        .main-header p { 
+            font-size: 1.1rem; 
+            opacity: 0.85; 
+            color: #546e7a; 
+        }
+        .creator-text { 
+            font-size: 0.9rem; 
+            margin-top: 5px; 
+            opacity: 0.75; 
+            color: #607d8b; 
+        }
+        
+        /* CHROME-STYLE TAB STYLING WITH SEAMLESS FLOW */
+        .stTabs [data-baseweb="tab-list"] {
+            gap: 2px;
+            background-color: #dadce0;
+            padding: 8px 8px 0 8px;
+            border-radius: 8px 8px 0 0;
+            margin-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .stTabs [data-baseweb="tab"] {
+            height: 60px;
+            padding: 0 30px;
+            background-color: #dadce0;
+            border-radius: 8px 8px 0 0;
+            font-size: 2.5rem;
+            font-weight: 500;
+            color: #5f6368;
+            border: none;
+            position: relative;
+            margin-bottom: 0;
+            transition: all 0.2s ease;
+            box-shadow: none;
+        }
+        
+        .stTabs [data-baseweb="tab"]:hover {
+            background-color: #e8eaed;
+            color: #202124;
+        }
+        
+        .stTabs [aria-selected="true"] {
+            background-color: #ffffff !important;
+            color: #202124 !important;
+            font-weight: 600;
+            border-radius: 8px 8px 0 0;
+            box-shadow: none;
+            z-index: 10;
+            border-bottom: 2px solid #ffffff;
+        }
+        
+        /* Remove the horizontal line below tabs */
+        .stTabs [data-baseweb="tab-list"]::after {
+            display: none;
+        }
+        
+        .stTabs [data-baseweb="tab-border"] {
+            display: none;
+        }
+        
+        .stTabs [data-baseweb="tab-highlight"] {
+            display: none;
+        }
+        
+        .stTabs [data-baseweb="tab-panel"] {
+            padding-top: 30px;
+            background: #ffffff;
+            border-radius: 0 8px 8px 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 30px 20px;
+            margin-top: 0;
+        }
+        
+        /* Button styling */
+        .stButton > button { 
+            background: #37474f; 
+            color: white; 
+            border: none; 
+            padding: 15px 40px; 
+            font-size: 1.1rem; 
+            font-weight: 600; 
+            border-radius: 8px; 
+            width: 100%; 
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); 
+            transition: all 0.3s ease; 
+        }
+        .stButton > button:hover { 
+            background: #455a64; 
+            transform: translateY(-2px); 
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); 
+        }
+        
+        /* Download button styling */
+        .stDownloadButton > button { 
+            background: #2e7d32 !important; 
+            color: white !important; 
+            border: none; 
+            padding: 15px 40px; 
+            font-size: 1.1rem; 
+            font-weight: 600; 
+            border-radius: 8px; 
+            width: 100%; 
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); 
+        }
+        .stDownloadButton > button:hover { 
+            background: #388e3c !important; 
+            transform: translateY(-2px); 
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); 
+        }
+        
+        /* Input status box */
+        .input-status { 
+            background: #ffffff; 
+            padding: 15px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+            margin: 10px 0; 
+        }
+        
+        /* Chat message styling */
+        .chat-message {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Hide Streamlit branding */
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+        
+        /* Animation */
+        @keyframes fadeInDown { 
+            from { opacity: 0; transform: translateY(-30px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        </style>
+        """, unsafe_allow_html=True)
 
 # --- Header ----------------------------------------------------------------
 def render_header():
@@ -377,7 +572,22 @@ def render_sidebar_config():
         Dictionary with settings: report_length, include_transcript, report_sections
     """
     with st.sidebar:
-        st.markdown("## ⚙️ Configuration")
+        st.markdown("## ⚙️ Settings")
+        
+        # Theme toggle at the top
+        st.markdown("### 🎨 Appearance")
+        theme_col1, theme_col2 = st.columns([3, 1])
+        with theme_col1:
+            st.markdown("Dark Mode")
+        with theme_col2:
+            dark_mode = st.checkbox("", value=st.session_state.dark_mode, key="dark_mode_toggle", label_visibility="collapsed")
+        
+        # Update session state if changed
+        if dark_mode != st.session_state.dark_mode:
+            st.session_state.dark_mode = dark_mode
+            st.rerun()
+        
+        st.markdown("---")
         
         with st.expander("Report Settings", expanded=False):
             report_length = st.selectbox(
