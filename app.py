@@ -11,7 +11,6 @@ from ui.components import (
     render_header,
     render_solo_interface,
     render_observation_header,
-    render_sidebar_config,
     render_name_inputs,
     render_audio_uploads,
     render_text_inputs,
@@ -60,8 +59,10 @@ with tab2:
     # Info message
     render_observation_header()
     
-    # Sidebar config
-    settings = render_sidebar_config()
+    # Hardcoded settings (no sidebar)
+    report_length = "Standard"
+    include_transcript = True
+    report_sections = ["Summary", "Strengths", "Areas for Growth"]
 
     # Name inputs
     render_name_inputs()
@@ -263,7 +264,7 @@ SCOPE: Analysis based ONLY on observer notes/audio (no teacher classroom audio).
                     if evaluation_criteria:
                         criteria_text = f"\n\nEVALUATION CRITERIA PROVIDED:\n{evaluation_criteria}"
                     
-                    sections_text = ", ".join(settings['report_sections']) if settings['report_sections'] else "Summary, Strengths, Areas for Growth"
+                    sections_text = ", ".join(report_sections)
                     
                     length_instruction = {
                         "Brief": "Keep the report concise (1-2 paragraphs per section).",
@@ -308,7 +309,7 @@ Time Management
 
 SECTION REQUIREMENTS:
 Include these sections: {sections_text}
-{length_instruction[settings['report_length']]}
+{length_instruction[report_length]}
 
 AVAILABLE DATA:
 - Teacher Audio: {'YES' if st.session_state.aligned_teacher else 'NO'}
@@ -353,7 +354,7 @@ REMEMBER: Output plain text only. No markdown. No asterisks. No brackets. The fo
 
     # --- Download Section ------------------------------------------------------
     if st.session_state.observation_report:
-        render_downloads(settings)
+        render_downloads()
 
 # --- Footer ----------------------------------------------------------------
 render_footer()
