@@ -84,10 +84,6 @@ def initialize_session_state():
         st.session_state.solo_chat_history = []
     if 'solo_audio_processed' not in st.session_state:
         st.session_state.solo_audio_processed = False
-    
-    # Visual preference
-    if 'dark_mode' not in st.session_state:
-        st.session_state.dark_mode = False
 
 # --- Constants -------------------------------------------------------------
 PAGE_CONFIG = {
