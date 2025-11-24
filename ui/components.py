@@ -53,7 +53,7 @@ def inject_custom_css():
         padding: 0 30px;
         background-color: #dadce0;
         border-radius: 8px 8px 0 0;
-        font-size: 1.3rem;
+        font-size: 1.5rem;
         font-weight: 500;
         color: #5f6368;
         border: none;
