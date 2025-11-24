@@ -251,33 +251,6 @@ def render_text_inputs():
     return observer_notes, evaluation_criteria
 
 
-# --- Input Status Display --------------------------------------------------
-def render_input_status(teacher_file, observer_file, observer_notes):
-    """Render input status metrics"""
-    st.markdown("---")
-    st.markdown("### 📊 Input Status")
-    
-    status_col1, status_col2, status_col3 = st.columns(3)
-    
-    with status_col1:
-        status_icon = "✅" if teacher_file else "❌"
-        st.metric("Teacher Audio", status_icon)
-    
-    with status_col2:
-        status_icon = "✅" if observer_file else "❌"
-        st.metric("Observer Audio", status_icon)
-    
-    with status_col3:
-        status_icon = "✅" if (observer_notes and observer_notes.strip()) else "❌"
-        st.metric("Observer Notes", status_icon)
-    
-    # Contextual help message
-    if not teacher_file and not observer_file and not (observer_notes and observer_notes.strip()):
-        st.warning("⚠️ No inputs detected. Please provide at least one audio file or observer notes to continue.")
-    elif not teacher_file:
-        st.info("ℹ️ **Note:** Report will be based solely on observer perspective without classroom audio evidence.")
-
-
 # --- Download Components ---------------------------------------------------
 def render_downloads(settings):
     """
@@ -303,7 +276,6 @@ def render_downloads(settings):
 
     # Generate timestamp
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    date_time_formatted = datetime.now().strftime('%B %d, %Y at %I:%M %p')
     date_formatted = datetime.now().strftime('%B %d, %Y')
 
     col_dl1, col_dl2 = st.columns(2)
@@ -360,7 +332,7 @@ def render_downloads(settings):
                 report_text=cleaned_report,
                 teacher_name=teacher_name if teacher_name else "Not specified",
                 observer_name=observer_name if observer_name else "Not specified",
-                date_time=date_formatted,
+                date_str=date_formatted,
                 report_length=settings['report_length'].lower(),
                 has_teacher_audio=has_teacher_audio,
             )
