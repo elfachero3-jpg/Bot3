@@ -1,341 +1,443 @@
-# --- Main Application File -------------------------------------------------
-# Music Teacher Observation Assistant - Modular Version
-# Created by Brett Taylor
+# --- Report Generation and PDF Creation ------------------------------------
+from datetime import datetime
+from fpdf import FPDF
+from google.genai import types
+from .utils import validate_pdf_inputs, sanitize_text_for_pdf, validate_text_content, parse_segments
+import prompts
 
-import streamlit as st
-
-# Import configuration and setup
-import config
-from ui.components import (
-    inject_custom_css,
-    render_header,
-    render_sidebar_config,
-    render_name_inputs,
-    render_audio_uploads,
-    render_text_inputs,
-    render_downloads,
-    render_footer,
-)
-from core.transcription import (
-    transcribe_audio,
-    align_transcriptions,
-)
-from core.reports import (
-    analyze_lesson_context,
-    research_best_practices,
-    generate_observation_report,
-)
-
-# --- Page Setup ------------------------------------------------------------
-st.set_page_config(
-    page_title="Music Teacher Observation Assistant",
-    page_icon="🎵",
-    layout="wide",
-)
-
-# Initialize session state
-config.initialize_session_state()
-
-# Inject CSS
-inject_custom_css()
-
-# Header
-render_header()
-
-# Sidebar config
-settings = render_sidebar_config()
-
-# Name inputs
-render_name_inputs()
-
-# Audio uploads
-teacher_file, observer_file = render_audio_uploads()
-
-# Text inputs
-observer_notes, evaluation_criteria = render_text_inputs()
-
-# --- Input Validation ------------------------------------------------------
-def validate_inputs(teacher_file, observer_file, observer_notes):
+# --- Lesson Analysis -------------------------------------------------------
+def analyze_lesson_context(transcription: str, client, config) -> str:
     """
-    Validate that at least one input source is provided.
-    Returns (is_valid, error_message, input_summary)
+    Analyze the lesson to identify type, grade level, and focus
+    
+    Args:
+        transcription: Teacher audio transcription
+        client: Gemini API client
+        config: Generation configuration
+    
+    Returns:
+        Analysis summary as string
     """
-    has_teacher = teacher_file is not None
-    has_observer_audio = observer_file is not None
-    has_observer_notes = observer_notes and observer_notes.strip()
-    
-    if not any([has_teacher, has_observer_audio, has_observer_notes]):
-        return False, "Please provide at least one input: teacher audio, observer audio, or observer notes.", None
-    
-    # Build input summary
-    inputs = []
-    if has_teacher:
-        inputs.append("teacher classroom audio")
-    if has_observer_audio:
-        inputs.append("observer audio commentary")
-    if has_observer_notes:
-        inputs.append("written observer notes")
-    
-    input_summary = ", ".join(inputs)
-    
-    return True, "", input_summary
+    try:
+        prompt = f"""Analyze this music lesson transcription and identify:
+1. Lesson type (e.g., general music, instrumental, vocal, theory)
+2. Approximate grade level
+3. Main teaching focus and objectives
+4. Key pedagogical approaches observed
 
-def calculate_processing_steps(teacher_file, observer_file, observer_notes):
-    """
-    Calculate total processing steps based on available inputs.
-    Returns total_steps count.
-    """
-    steps = 2  # Always: Research + Report Generation
-    
-    if teacher_file:
-        steps += 1  # Teacher transcription
-    
-    if observer_file:
-        steps += 1  # Observer transcription
-    
-    # Alignment step only if we have both teacher and observer content
-    has_observer_content = observer_file or (observer_notes and observer_notes.strip())
-    if teacher_file and has_observer_content:
-        steps += 1  # Alignment
-    
-    return steps
+Transcription:
+{transcription}
 
-# --- Processing Button ----------------------------------------------------
-st.markdown("---")
-
-# Validate inputs before showing button
-is_valid, validation_error, input_summary = validate_inputs(teacher_file, observer_file, observer_notes)
-
-if is_valid:
-    if st.button("🎯 Generate Observation Report", use_container_width=True):
+Provide a concise analysis in 2-3 paragraphs."""
         
-        # Calculate total steps
-        total_steps = calculate_processing_steps(teacher_file, observer_file, observer_notes)
-        current_step = 0
+        response = client.models.generate_content(
+            model="gemini-flash-latest",
+            contents=[types.Content(parts=[types.Part(text=prompt)])],
+            config=config,
+        )
+        return response.text
+    except Exception as e:
+        return f"Lesson analysis could not be completed: {str(e)}"
+
+
+# --- Best Practices Research -----------------------------------------------
+def research_best_practices(lesson_analysis: str, client, config) -> str:
+    """
+    Research relevant best practices based on lesson context
+    
+    Args:
+        lesson_analysis: Output from analyze_lesson_context
+        client: Gemini API client
+        config: Generation configuration (with search tool)
+    
+    Returns:
+        Research summary as string
+    """
+    try:
+        prompt = f"""Based on this lesson analysis, research and summarize current best practices in music education for this context:
+
+{lesson_analysis}
+
+Focus on:
+1. Pedagogical strategies for this lesson type and grade level
+2. Current research on effective teaching methods
+3. Recommended approaches from music education literature
+
+Provide a concise summary with specific, actionable insights."""
         
-        # Setup client/config
-        client = config.create_client()
-        generation_cfg, transcription_cfg = config.get_generation_configs()
+        response = client.models.generate_content(
+            model="gemini-flash-latest",
+            contents=[types.Content(parts=[types.Part(text=prompt)])],
+            config=config,
+        )
+        return response.text
+    except Exception as e:
+        return f"Best practices research completed with general music education principles. (Note: {str(e)})"
 
-        # STEP 1: Transcribe Teacher Audio (if provided)
-        if teacher_file:
-            current_step += 1
-            with st.spinner(f"🔄 Step {current_step}/{total_steps}: Transcribing teacher audio..."):
-                try:
-                    st.session_state.teacher_transcription = transcribe_audio(
-                        teacher_file, is_teacher=True, client=client, config=transcription_cfg
-                    )
-                    st.success("✅ Teacher audio transcribed!")
-                except Exception as e:
-                    st.error(f"❌ Teacher transcription failed: {str(e)}")
-                    st.error("Please verify the audio file is not corrupted and try again.")
-                    st.stop()
-        else:
-            st.session_state.teacher_transcription = None
 
-        # STEP 2: Transcribe Observer Audio (if provided)
-        observer_content = ""
-        if observer_file:
-            current_step += 1
-            with st.spinner(f"🔄 Step {current_step}/{total_steps}: Transcribing observer audio..."):
-                try:
-                    st.session_state.observer_transcription = transcribe_audio(
-                        observer_file, is_teacher=False, client=client, config=transcription_cfg
-                    )
-                    observer_content = st.session_state.observer_transcription
-                    st.success("✅ Observer audio transcribed!")
-                except Exception as e:
-                    st.error(f"❌ Observer transcription failed: {str(e)}")
-                    st.stop()
+# --- Report Generation Prompt Call ----------------------------------------
+def generate_observation_report(
+    lesson_analysis: str,
+    best_practices: str,
+    aligned_teacher: str,
+    aligned_observer: str,
+    evaluation_criteria: str,
+    report_sections: list,
+    report_length: str,
+    client,
+    config
+) -> str:
+    """
+    Generate comprehensive observation report
+    
+    Args:
+        lesson_analysis: Lesson context analysis
+        best_practices: Research summary
+        aligned_teacher: Aligned teacher transcription
+        aligned_observer: Aligned observer notes
+        evaluation_criteria: Optional rubric/criteria
+        report_sections: Sections to include
+        report_length: Brief/Standard/Comprehensive
+        client, config: Gemini client and generation config
+    
+    Returns:
+        The generated report text
+    """
+    try:
+        prompt = prompts.get_report_generation_prompt(
+            lesson_analysis,
+            best_practices,
+            aligned_teacher,
+            aligned_observer,
+            evaluation_criteria,
+            report_sections,
+            report_length
+        )
         
-        # Combine observer notes if provided
-        if observer_notes and observer_notes.strip():
-            observer_content += f"\n\nOBSERVER WRITTEN NOTES:\n{observer_notes}"
-            st.success("✅ Observer notes included!")
+        response = client.models.generate_content(
+            model="gemini-flash-latest",
+            contents=[types.Content(parts=[types.Part(text=prompt)])],
+            config=config,
+        )
+        return response.text
+    except Exception as e:
+        raise Exception(f"Report generation failed: {str(e)}")
 
-        # STEP 3: Align Transcriptions (only if we have both teacher and observer content)
-        if st.session_state.teacher_transcription and observer_content:
-            current_step += 1
-            with st.spinner(f"🔄 Step {current_step}/{total_steps}: Aligning observations chronologically..."):
-                try:
-                    st.session_state.aligned_teacher, st.session_state.aligned_observer = align_transcriptions(
-                        st.session_state.teacher_transcription,
-                        observer_content,
-                        client,
-                        generation_cfg
-                    )
-                    st.success("✅ Observations aligned chronologically!")
-                except Exception as e:
-                    # Fallback: just remove timestamps
-                    import re
-                    st.session_state.aligned_teacher = re.sub(r'\[\d{2}:\d{2}\]\s*', '', st.session_state.teacher_transcription or "")
-                    st.session_state.aligned_observer = re.sub(r'\[\d{2}:\d{2}\]\s*', '', observer_content or "")
-                    st.success("✅ Observations aligned chronologically!")
-        else:
-            # Only one source - just clean timestamps
-            import re
-            if st.session_state.teacher_transcription:
-                st.session_state.aligned_teacher = re.sub(r'\[\d{2}:\d{2}\]\s*', '', st.session_state.teacher_transcription)
+
+# --- PDF Generation: Observation Report ------------------------------------
+def create_observation_report_pdf(
+    report_text: str,
+    teacher_name: str,
+    observer_name: str,
+    date_str: str,
+    report_length: str = "standard",
+    has_teacher_audio: bool = True,
+) -> bytes:
+    """Generate a professionally formatted observation report PDF"""
+    
+    # Validate inputs before processing
+    is_valid, error_msg = validate_pdf_inputs(report_text, teacher_name, observer_name, date_str)
+    if not is_valid:
+        raise ValueError(f"PDF input validation failed: {error_msg}")
+    
+    try:
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_margins(12, 12, 12)
+        pdf.set_auto_page_break(auto=True, margin=15)
+
+        # Sanitize inputs
+        report_text = sanitize_text_for_pdf(report_text)
+        teacher_name = sanitize_text_for_pdf(teacher_name) if teacher_name else "Not specified"
+        observer_name = sanitize_text_for_pdf(observer_name) if observer_name else "Not specified"
+        date_str = sanitize_text_for_pdf(date_str)
+
+        # CRITICAL: Remove markdown formatting from report text
+        import re
+        # Remove bold markers
+        report_text = re.sub(r'\*\*(.+?)\*\*', r'\1', report_text)
+        # Remove italic markers  
+        report_text = re.sub(r'\*(.+?)\*', r'\1', report_text)
+
+        usable = pdf.epw
+
+        # Title
+        pdf.set_font("Arial", "B", 16)
+        pdf.set_x(pdf.l_margin)
+        pdf.cell(usable, 10, "Music Teacher Observation Report", ln=True, align="C")
+        pdf.ln(3)
+
+        # Date only (no time)
+        pdf.set_font("Arial", "I", 10)
+        pdf.set_x(pdf.l_margin)
+        pdf.cell(usable, 6, date_str, ln=True, align="C")
+        pdf.ln(5)
+
+        # Scope disclaimer if no teacher audio
+        if not has_teacher_audio:
+            pdf.set_font("Arial", "I", 9)
+            pdf.set_text_color(100, 100, 100)
+            pdf.set_x(pdf.l_margin)
+            pdf.multi_cell(
+                usable,
+                5,
+                "Note: This report is based on observer notes/audio without teacher classroom audio evidence.",
+                align="L",
+            )
+            pdf.set_text_color(0, 0, 0)
+            pdf.ln(3)
+
+        # Teacher and Observer names
+        pdf.set_font("Arial", "B", 11)
+        pdf.set_x(pdf.l_margin)
+        if teacher_name and teacher_name != "Not specified":
+            pdf.cell(usable, 6, f"Teacher: {teacher_name}", ln=True, align="L")
+        pdf.set_x(pdf.l_margin)
+        if observer_name and observer_name != "Not specified":
+            pdf.cell(usable, 6, f"Observer: {observer_name}", ln=True, align="L")
+        pdf.ln(5)
+
+        # Report content
+        pdf.set_font("Arial", "", 10)
+        line_height = 5
+
+        lines = report_text.split("\n")
+        for raw_line in lines:
+            line = raw_line.strip()
+            if not line:
+                pdf.ln(3)
+                continue
+
+            # Check if line is an ALL CAPS section header (main sections)
+            # Must be all uppercase and end with colon
+            if line.isupper() and line.endswith(":") and len(line.split()) <= 5:
+                pdf.set_font("Arial", "B", 11)
+                pdf.set_x(pdf.l_margin)
+                pdf.multi_cell(usable, line_height, line)
+                pdf.set_font("Arial", "", 10)
+                pdf.ln(2)
+            # Check if line is a subsection header (short descriptive title)
+            # Characteristics: 2-12 words, starts with capital, doesn't end with sentence punctuation
+            # Not a bullet, not part of a sentence (doesn't start with common sentence words)
+            elif (len(line.split()) >= 2 and len(line.split()) <= 12 and 
+                  not line.startswith(("- ", "* ", "• ", "The ", "This ", "When ", "After ", "Before ", "During ", "To ", "In ", "As ", "For ", "With ")) and
+                  not line.endswith((".","!","?",",",";")) and
+                  line[0].isupper() and
+                  not line.startswith(("Teacher:", "Student:", "Observer:"))):
+                pdf.set_font("Arial", "B", 10)
+                pdf.set_x(pdf.l_margin)
+                pdf.multi_cell(usable, line_height, line)
+                pdf.set_font("Arial", "", 10)
+                pdf.ln(1)
+            # Bulleted lines
+            elif line.startswith(("- ", "* ", "• ")):
+                pdf.set_x(pdf.l_margin)
+                pdf.multi_cell(usable, line_height, line)
             else:
-                st.session_state.aligned_teacher = ""
+                pdf.set_x(pdf.l_margin)
+                pdf.multi_cell(usable, line_height, line)
+
+        # Single footer disclaimer at bottom of final page
+        pdf.set_font("Arial", "I", 9)
+        pdf.set_text_color(100, 100, 100)
+        pdf.set_y(-18)
+        pdf.set_x(pdf.l_margin)
+        pdf.multi_cell(
+            usable,
+            5,
+            "Disclaimer: This observation report was generated by AI and may contain errors. Please review all content for accuracy and use professional judgment.",
+            align="C",
+        )
+        pdf.set_text_color(0, 0, 0)
+
+        return bytes(pdf.output())
+
+    except Exception as e:
+        error_type = type(e).__name__
+        raise Exception(f"PDF Report generation error ({error_type}): {str(e)}")
+
+
+# --- PDF Generation: Dual Column Transcript --------------------------------
+def create_dual_column_pdf(teacher_text: str, observer_text: str) -> bytes:
+    """Generate a two-column PDF from both transcriptions with synchronized rows"""
+    
+    is_valid, error = validate_text_content(teacher_text, "Teacher transcription")
+    if not is_valid:
+        raise ValueError(f"Teacher transcription validation failed: {error}")
+    
+    is_valid, error = validate_text_content(observer_text, "Observer transcription")
+    if not is_valid:
+        if "empty" in error.lower():
+            observer_text = "No observer audio or notes provided."
+        else:
+            raise ValueError(f"Observer transcription validation failed: {error}")
+    
+    try:
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_auto_page_break(auto=False)
+        pdf.set_margins(12, 12, 12)
+
+        # Sanitize inputs
+        teacher_text = sanitize_text_for_pdf(teacher_text)
+        observer_text = sanitize_text_for_pdf(observer_text)
+
+        # Title
+        pdf.set_font("Arial", "B", 16)
+        pdf.cell(0, 10, "Aligned Audio Transcription", ln=True, align="C")
+        pdf.ln(3)
+
+        # Date
+        pdf.set_font("Arial", "I", 10)
+        pdf.cell(0, 6, f"Generated: {datetime.now().strftime('%B %d, %Y')}", ln=True, align="C")
+        pdf.ln(3)
+
+        # AI Disclaimer
+        pdf.set_font("Arial", "I", 9)
+        pdf.set_text_color(100, 100, 100)
+        pdf.multi_cell(0, 5, "Disclaimer: This transcription was created by AI. Please verify all important information for accuracy.", align="C")
+        pdf.set_text_color(0, 0, 0)
+        pdf.ln(5)
+
+        # Column headers
+        pdf.set_font("Arial", "B", 11)
+        pdf.cell(95, 6, "Teacher Audio", border=1, align="C")
+        pdf.cell(95, 6, "Observer Audio/Notes", border=1, align="C", ln=True)
+        pdf.ln(2)
+
+        def parse_segments(text):
+            if not text or not text.strip():
+                return ["No content available."]
             
-            if observer_content:
-                st.session_state.aligned_observer = re.sub(r'\[\d{2}:\d{2}\]\s*', '', observer_content)
-            else:
-                st.session_state.aligned_observer = ""
-
-        # STEP 4: Research Best Practices
-        current_step += 1
-        with st.spinner(f"🔄 Step {current_step}/{total_steps}: Researching music education best practices..."):
-            try:
-                # Use whichever transcription is available for analysis
-                analysis_text = st.session_state.aligned_teacher if st.session_state.aligned_teacher else st.session_state.aligned_observer
+            segments = []
+            current_segment = []
+            
+            for line in text.split('\n'):
+                line = line.strip()
+                if not line:
+                    continue
                 
-                if analysis_text:
-                    lesson_analysis = analyze_lesson_context(
-                        transcription=analysis_text,
-                        client=client,
-                        config=generation_cfg
-                    )
-                    st.session_state.lesson_analysis = lesson_analysis
-                    
-                    best_practices = research_best_practices(
-                        lesson_analysis,
-                        client=client,
-                        config=generation_cfg
-                    )
-                    st.success("✅ Best practices research completed!")
+                if line.startswith(('Teacher:', 'Student:', 'Observer:', '<Music>')):
+                    if current_segment:
+                        segments.append(' '.join(current_segment))
+                    current_segment = [line]
                 else:
-                    best_practices = "Using general music education principles."
-                    st.session_state.lesson_analysis = "General music education context"
-                    st.success("✅ Using general music education principles!")
-                    
-            except Exception as e:
-                st.warning(f"⚠️ Research step encountered an issue. Proceeding with analysis: {str(e)}")
-                best_practices = "Using general music education principles."
-                st.session_state.lesson_analysis = "General music education context"
+                    current_segment.append(line)
+            
+            if current_segment:
+                segments.append(' '.join(current_segment))
+            
+            return segments if segments else ["No content available."]
 
-        # STEP 5: Generate Observation Report
-        current_step += 1
-        with st.spinner(f"🔄 Step {current_step}/{total_steps}: Generating comprehensive observation report..."):
-            try:
-                # Build scope instruction
-                scope_instruction = ""
-                if st.session_state.aligned_teacher and st.session_state.aligned_observer:
-                    scope_instruction = """
-SCOPE: Full classroom analysis with both teacher audio and observer notes available.
-- Use teacher audio quotes as evidence
-- Prioritize observer observations and find supporting evidence in teacher audio
-- Provide comprehensive feedback"""
-                elif st.session_state.aligned_teacher:
-                    scope_instruction = """
-SCOPE: Analysis based on teacher classroom audio only (no observer notes).
-- Use teacher audio quotes as evidence
-- Base evaluation on best practices research
-- Provide objective analysis of observed teaching practices"""
+        teacher_segments = parse_segments(teacher_text)
+        observer_segments = parse_segments(observer_text)
+        max_segments = max(len(teacher_segments), len(observer_segments))
+
+        column_width = 92
+        left_x = 9
+        right_x = 109
+        line_height = 4
+        page_bottom = 280
+
+        pdf.set_font("Arial", "", 9)
+        for i in range(max_segments):
+            teacher_seg = teacher_segments[i] if i < len(teacher_segments) else ""
+            observer_seg = observer_segments[i] if i < len(observer_segments) else ""
+
+            if pdf.get_y() > page_bottom:
+                pdf.add_page()
+                pdf.set_font("Arial", "", 9)
+
+            y_start = pdf.get_y()
+
+            # Left column (Teacher)
+            pdf.set_xy(left_x, y_start)
+            if teacher_seg:
+                if teacher_seg.startswith("Teacher:") or teacher_seg.startswith("Student:"):
+                    pdf.set_font("Arial", "B", 9)
+                    pdf.multi_cell(column_width, line_height, teacher_seg)
+                    pdf.set_font("Arial", "", 9)
+                elif teacher_seg.startswith("<Music>"):
+                    pdf.set_font("Arial", "I", 9)
+                    pdf.multi_cell(column_width, line_height, teacher_seg)
+                    pdf.set_font("Arial", "", 9)
                 else:
-                    scope_instruction = """
-SCOPE: Analysis based ONLY on observer notes/audio (no teacher classroom audio).
-- Focus on documented observer observations
-- Acknowledge limited scope - no direct classroom audio evidence available
-- Include disclaimer noting report is based on observer perspective only
-- Do NOT quote observer audio - paraphrase their observations instead"""
-                
-                criteria_text = ""
-                if evaluation_criteria:
-                    criteria_text = f"\n\nEVALUATION CRITERIA PROVIDED:\n{evaluation_criteria}"
-                
-                sections_text = ", ".join(settings['report_sections']) if settings['report_sections'] else "Summary, Strengths, Areas for Growth"
-                
-                length_instruction = {
-                    "Brief": "Keep the report concise (1-2 paragraphs per section).",
-                    "Standard": "Provide a thorough analysis with appropriate detail (2-3 paragraphs per section).",
-                    "Comprehensive": "Provide an extensive, detailed analysis with multiple examples (3-4+ paragraphs per section).",
-                }
-                
-                report_prompt = f"""GENERATE MUSIC TEACHER OBSERVATION REPORT
+                    pdf.multi_cell(column_width, line_height, teacher_seg)
+            teacher_y_end = pdf.get_y()
 
-CRITICAL FORMATTING INSTRUCTIONS - READ CAREFULLY:
-1. DO NOT USE MARKDOWN. Do not use asterisks (**) for bold or italics.
-2. Use these exact section headers in ALL CAPS with no formatting: LESSON SUMMARY:, STRENGTHS:, AREAS FOR GROWTH:
-3. For each item under STRENGTHS and AREAS FOR GROWTH, provide a short descriptive title on its own line (3-7 words, no special formatting, no brackets, no asterisks)
-4. Follow each title with explanatory paragraphs in plain text
-5. Never use brackets [ ] or asterisks ** in your output
-6. Use plain text only - the PDF formatting will be applied automatically
-7. Use quotations ONLY from teacher audio as evidence (if available)
-8. Be generous with praise but clear with constructive criticism
-9. Maintain professional, neutral language throughout
-10. Do NOT include any 'Note:' or 'Disclaimer:' lines in your output. The application adds a single disclaimer in the PDF footer.
+            # Right column (Observer)
+            pdf.set_xy(right_x, y_start)
+            if observer_seg:
+                if observer_seg.startswith("Observer:"):
+                    pdf.set_font("Arial", "B", 9)
+                    pdf.multi_cell(column_width, line_height, observer_seg)
+                    pdf.set_font("Arial", "", 9)
+                elif observer_seg.startswith("<Music>"):
+                    pdf.set_font("Arial", "I", 9)
+                    pdf.multi_cell(column_width, line_height, observer_seg)
+                    pdf.set_font("Arial", "", 9)
+                else:
+                    pdf.multi_cell(column_width, line_height, observer_seg)
+            observer_y_end = pdf.get_y()
 
-OUTPUT FORMAT EXAMPLE (follow this exact style):
-LESSON SUMMARY:
-[Your paragraph here in plain text]
+            pdf.set_y(max(teacher_y_end, observer_y_end))
+            pdf.ln(2)
 
-STRENGTHS:
-Positive Classroom Environment
-[Paragraph explaining this strength]
+        # Single footer disclaimer at bottom of final page
+        pdf.set_font("Arial", "I", 8)
+        pdf.set_text_color(100, 100, 100)
+        pdf.set_y(-15)
+        pdf.set_x(12)
+        usable_width = pdf.w - 24
+        pdf.multi_cell(
+            usable_width,
+            4,
+            "Note: This transcription was created by AI. Please verify all important information for accuracy.",
+            align="C",
+        )
+        pdf.set_text_color(0, 0, 0)
 
-Effective Use of Feedback
-[Paragraph explaining this strength]
+        return bytes(pdf.output())
 
-AREAS FOR GROWTH:
-Differentiation Strategies
-[Paragraph with constructive feedback]
+    except Exception as e:
+        error_type = type(e).__name__
+        raise Exception(f"PDF Transcript generation error ({error_type}): {str(e)}")
 
-Time Management
-[Paragraph with constructive feedback]
 
-{scope_instruction}
-{criteria_text}
+# --- Text Fallbacks --------------------------------------------------------
+def create_text_fallback(report_text: str, teacher_name: str, observer_name: str, date_str: str) -> str:
+    """Create a plain text version as fallback if PDF generation fails"""
+    return f"""MUSIC TEACHER OBSERVATION REPORT
+{date_str}
 
-SECTION REQUIREMENTS:
-Include these sections: {sections_text}
-{length_instruction[settings['report_length']]}
+Teacher: {teacher_name if teacher_name else 'Not specified'}
+Observer: {observer_name if observer_name else 'Not specified'}
 
-AVAILABLE DATA:
-- Teacher Audio: {'YES' if st.session_state.aligned_teacher else 'NO'}
-- Observer Audio/Notes: {'YES' if st.session_state.aligned_observer else 'NO'}
-- Input Summary: {input_summary}
+{'='*80}
 
-LESSON ANALYSIS:
-{st.session_state.lesson_analysis}
+{report_text}
 
-BEST PRACTICES RESEARCH:
-{best_practices}
+{'='*80}
 
-TEACHER AUDIO TRANSCRIPTION:
-{st.session_state.aligned_teacher if st.session_state.aligned_teacher else "Not available - no teacher audio provided."}
+Disclaimer: This observation report was generated by AI and may contain errors. Please review all content for accuracy and use professional judgment.
+"""
 
-OBSERVER OBSERVATIONS:
-{st.session_state.aligned_observer if st.session_state.aligned_observer else "No observer notes provided."}
+def create_transcript_text_fallback(teacher_text: str, observer_text: str, date_str: str) -> str:
+    """Create a text fallback version of the transcript export"""
+    return f"""MUSIC TEACHER OBSERVATION - FULL TRANSCRIPT
+{date_str}
 
-REMEMBER: Output plain text only. No markdown. No asterisks. No brackets. The formatting will be applied during PDF generation. Do NOT include any 'Note:' or 'Disclaimer:' text."""
-                
-                response = client.models.generate_content(
-                    model="gemini-flash-latest",
-                    contents=[{"role": "user", "parts": [{"text": report_prompt}]}],
-                    config=generation_cfg,
-                )
-                
-                st.session_state.observation_report = response.text
-                st.success("✅ Observation report generated!")
-                
-            except Exception as e:
-                st.error(f"❌ Report generation failed: {str(e)}")
-                st.stop()
+TEACHER AUDIO:
+{'='*80}
 
-        # Success message
-        st.balloons()
-        st.success("🎉 **Analysis Complete!** Your observation report is ready for download.")
+{teacher_text}
 
-else:
-    # Show disabled button with error message
-    st.button("🎯 Generate Observation Report", disabled=True, use_container_width=True)
-    st.error(f"❌ {validation_error}")
+{'='*80}
+OBSERVER AUDIO/NOTES:
+{'='*80}
 
-# --- Download Section ------------------------------------------------------
-if st.session_state.observation_report:
-    render_downloads(settings)
+{observer_text if observer_text else "No observer audio or notes provided."}
 
-# --- Footer ----------------------------------------------------------------
-render_footer()
+{'='*80}
+Note: This transcription was created by AI. Please verify all important information for accuracy.
+"""
