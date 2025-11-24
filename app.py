@@ -17,18 +17,13 @@ from ui.components import (
     render_footer,
 )
 from core.transcription import (
-    process_teacher_audio,
-    process_observer_audio,
+    transcribe_audio,
     align_transcriptions,
 )
 from core.reports import (
     analyze_lesson_context,
     research_best_practices,
     generate_observation_report,
-)
-from core.utils import (
-    setup_gemini_client,
-    get_generation_config,
 )
 
 # --- Page Setup ------------------------------------------------------------
@@ -37,6 +32,9 @@ st.set_page_config(
     page_icon="🎵",
     layout="centered",
 )
+
+# Initialize session state
+config.initialize_session_state()
 
 # Inject CSS
 inject_custom_css()
@@ -66,14 +64,14 @@ if st.button("🚀 Generate Observation Report", type="primary", use_container_w
 
     with st.spinner("🔄 Processing..."):
         # Setup client/config
-        client = setup_gemini_client()
-        generation_cfg = get_generation_config()
+        client = config.create_client()
+        generation_cfg, transcription_cfg = config.get_generation_configs()
 
         # STEP 1: Transcribe Teacher
         if teacher_file:
             with st.spinner("🎙️ Step 1/5: Transcribing teacher audio..."):
-                st.session_state.teacher_transcription = process_teacher_audio(
-                    teacher_file, client, generation_cfg
+                st.session_state.teacher_transcription = transcribe_audio(
+                    teacher_file, is_teacher=True, client=client, config=transcription_cfg
                 )
         else:
             st.session_state.teacher_transcription = ""
@@ -81,8 +79,8 @@ if st.button("🚀 Generate Observation Report", type="primary", use_container_w
         # STEP 2: Transcribe or load Observer Notes
         with st.spinner("📝 Step 2/5: Processing observer notes..."):
             if observer_file:
-                st.session_state.observer_transcription = process_observer_audio(
-                    observer_file, client, generation_cfg
+                st.session_state.observer_transcription = transcribe_audio(
+                    observer_file, is_teacher=False, client=client, config=transcription_cfg
                 )
             else:
                 st.session_state.observer_transcription = observer_notes or ""
