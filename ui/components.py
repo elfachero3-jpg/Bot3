@@ -8,27 +8,174 @@ def inject_custom_css():
     st.markdown("""
     <style>
     @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
-    .stApp { background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%); }
-    .main-header { text-align: center; color: #2c3e50; padding: 20px 0 30px 0; animation: fadeInDown 0.8s ease; }
-    .main-header h1 { font-size: 2.5rem; font-weight: 600; margin-bottom: 10px; }
-    .main-header p { font-size: 1.1rem; opacity: 0.85; color: #546e7a; }
-    .creator-text { font-size: 0.9rem; margin-top: 5px; opacity: 0.75; color: #607d8b; }
-    .stButton > button { background: #37474f; color: white; border-radius: 10px; border: none; padding: 0.6rem 1rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); transition: all 0.3s ease; }
-    .stButton > button:hover { background: #263238; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-    .stDownloadButton > button { width: 100%; }
-    .expander > div { padding: 0.5rem 0.75rem; }
-    .stTextArea textarea { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    
+    /* Main app background */
+    .stApp { 
+        background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%); 
+    }
+    
+    /* Header styling */
+    .main-header { 
+        text-align: center; 
+        color: #1f2937; 
+        padding: 20px 0 10px 0; 
+        animation: fadeInDown 0.8s ease; 
+    }
+    .main-header h1 { 
+        font-size: 2.5rem; 
+        font-weight: 600; 
+        margin-bottom: 10px;
+        color: #1f2937;
+    }
+    .main-header .subtitle { 
+        font-size: 1.1rem; 
+        color: #6b7280; 
+        margin-bottom: 5px;
+    }
+    .main-header .creator { 
+        font-size: 0.95rem; 
+        color: #9ca3af; 
+        margin-top: 8px;
+    }
+    
+    /* Info banner styling */
+    .info-banner {
+        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        border-left: 4px solid #3b82f6;
+        padding: 16px 20px;
+        border-radius: 8px;
+        margin: 20px 0 30px 0;
+        color: #1e40af;
+        font-size: 1rem;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+    }
+    .info-banner strong {
+        color: #1e3a8a;
+        font-weight: 600;
+    }
+    
+    /* Section headers with icons */
+    .section-header {
+        display: flex;
+        align-items: center;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #374151;
+        margin: 30px 0 20px 0;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e5e7eb;
+    }
+    .section-header .icon {
+        margin-right: 12px;
+        font-size: 1.6rem;
+    }
+    
+    /* Audio section styling */
+    .audio-section-title {
+        display: flex;
+        align-items: center;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #4b5563;
+        margin-bottom: 8px;
+    }
+    .audio-section-title .icon {
+        margin-right: 10px;
+        font-size: 1.3rem;
+    }
+    .audio-description {
+        color: #6b7280;
+        font-size: 0.95rem;
+        margin-bottom: 12px;
+    }
+    
+    /* Button styling */
+    .stButton > button { 
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white; 
+        border-radius: 10px; 
+        border: none; 
+        padding: 0.7rem 1.2rem;
+        font-weight: 600;
+        font-size: 1.05rem;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        transition: all 0.3s ease; 
+    }
+    .stButton > button:hover { 
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        transform: translateY(-2px); 
+        box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4); 
+    }
+    
+    /* Download buttons */
+    .stDownloadButton > button { 
+        width: 100%;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        box-shadow: 0 3px 10px rgba(16, 185, 129, 0.3);
+    }
+    .stDownloadButton > button:hover {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        box-shadow: 0 5px 14px rgba(16, 185, 129, 0.4);
+    }
+    
+    /* Text input styling */
+    .stTextInput > div > div > input {
+        border-radius: 8px;
+        border: 2px solid #e5e7eb;
+        padding: 0.6rem 0.8rem;
+    }
+    .stTextInput > div > div > input:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    /* File uploader styling */
+    .stFileUploader {
+        border-radius: 10px;
+    }
+    
+    /* Text area styling */
+    .stTextArea textarea { 
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        border-radius: 8px;
+        border: 2px solid #e5e7eb;
+    }
+    .stTextArea textarea:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    /* Expander styling */
+    .streamlit-expanderHeader {
+        background-color: #f9fafb;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+    
+    /* Divider styling */
+    hr {
+        margin: 30px 0;
+        border: none;
+        border-top: 2px solid #e5e7eb;
+    }
     </style>
     """, unsafe_allow_html=True)
 
 # --- Header ----------------------------------------------------------------
 def render_header():
-    """Render app header"""
+    """Render app header matching old design"""
     st.markdown("""
     <div class="main-header">
         <h1>🎵 Music Teacher Observation Assistant</h1>
-        <p>Create clear, professional observations with aligned evidence and targeted feedback.</p>
-        <div class="creator-text">Created by Brett Taylor</div>
+        <div class="subtitle">AI-Powered Classroom Observation & Feedback Tool</div>
+        <div class="creator">Created by Brett Taylor</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Info banner
+    st.markdown("""
+    <div class="info-banner">
+        💡 <strong>Getting Started:</strong> Provide at least one input source (teacher audio, observer audio, or observer notes) to generate an observation report.
     </div>
     """, unsafe_allow_html=True)
 
@@ -72,36 +219,75 @@ def render_sidebar_config():
 
 # --- Name Inputs ------------------------------------------------------------
 def render_name_inputs():
-    """Render inputs for teacher and observer names"""
+    """Render observation data section with name inputs"""
+    st.markdown("""
+    <div class="section-header">
+        <span class="icon">📋</span>
+        <span>Observation Data</span>
+    </div>
+    """, unsafe_allow_html=True)
+    
     c1, c2 = st.columns(2)
     with c1:
-        st.text_input("Teacher Name", key="teacher_name", placeholder="Enter teacher's full name")
+        st.text_input(
+            "👤 Teacher Name", 
+            key="teacher_name", 
+            placeholder="Enter teacher's name (optional)"
+        )
     with c2:
-        st.text_input("Observer Name", key="observer_name", placeholder="Enter observer's full name")
+        st.text_input(
+            "👤 Observer Name", 
+            key="observer_name", 
+            placeholder="Enter observer's name (optional)"
+        )
 
 # --- Audio Uploads ----------------------------------------------------------
 def render_audio_uploads():
-    """Render audio upload widgets"""
+    """Render audio upload widgets with styled headers"""
+    st.markdown("<br>", unsafe_allow_html=True)
+    
     c1, c2 = st.columns(2)
     
     with c1:
+        st.markdown("""
+        <div class="audio-section-title">
+            <span class="icon">🎙️</span>
+            <span>Teacher Audio (Optional)</span>
+        </div>
+        <div class="audio-description">Upload classroom audio recording</div>
+        """, unsafe_allow_html=True)
+        
         teacher_file = st.file_uploader(
-            "Upload Teacher Audio (MP3/WAV/M4A)",
-            type=["mp3", "wav", "m4a"],
-            key="teacher_audio"
+            "teacher_audio_uploader",
+            type=["mp3", "wav", "m4a", "flac", "ogg", "webm"],
+            key="teacher_audio",
+            label_visibility="collapsed"
         )
+    
     with c2:
+        st.markdown("""
+        <div class="audio-section-title">
+            <span class="icon">🎙️</span>
+            <span>Observer Audio (Optional)</span>
+        </div>
+        <div class="audio-description">Upload observer's verbal notes</div>
+        """, unsafe_allow_html=True)
+        
         observer_file = st.file_uploader(
-            "Upload Observer Audio (optional)",
-            type=["mp3", "wav", "m4a"],
-            key="observer_audio"
+            "observer_audio_uploader",
+            type=["mp3", "wav", "m4a", "flac", "ogg", "webm"],
+            key="observer_audio",
+            label_visibility="collapsed"
         )
+    
     return teacher_file, observer_file
 
 # --- Text Inputs ------------------------------------------------------------
 def render_text_inputs():
     """Render observer notes and evaluation criteria inputs"""
-    with st.expander("Observer Notes / Evaluation Criteria", expanded=False):
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    with st.expander("📝 Observer Notes / Evaluation Criteria", expanded=False):
         st.markdown("You can paste observer notes, upload audio, and/or provide evaluation criteria.")
         
         notes_method = st.radio(
@@ -118,7 +304,7 @@ def render_text_inputs():
                 height=200,
             )
         else:
-            st.info("Upload the observer audio in the 'Upload Observer Audio' section above.")
+            st.info("👆 Upload the observer audio in the 'Observer Audio' section above.")
         
         st.markdown("---")
         criteria_method = st.radio(
@@ -137,7 +323,8 @@ def render_text_inputs():
             )
         else:
             criteria_file = st.file_uploader(
-                "Upload criteria document", type=["txt", "pdf", "docx"],
+                "Upload criteria document", 
+                type=["txt", "pdf", "docx"],
                 help="Upload evaluation rubric or criteria document"
             )
             if criteria_file:
@@ -265,7 +452,7 @@ def render_footer():
     """Render app footer"""
     st.markdown("---")
     st.markdown(
-        "<p style='text-align: center; color: #546e7a; opacity: 0.8;'>"
+        "<p style='text-align: center; color: #6b7280; font-size: 0.9rem;'>"
         "Powered by Gemini Flash • Music Teacher Observation Assistant v2.1"
         "</p>",
         unsafe_allow_html=True
