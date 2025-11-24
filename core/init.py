@@ -1,13 +1,20 @@
 # Core module initialization
 from .transcription import transcribe_audio, align_transcriptions
-from .reports import (
+from .analysis import (
     analyze_lesson_context,
     research_best_practices,
     generate_observation_report,
+    solo_feedback_conversation
+)
+from .pdf_generation import (
     create_observation_report_pdf,
-    create_dual_column_pdf,
+    create_solo_session_pdf,
+    create_dual_column_pdf
+)
+from .text_exports import (
     create_text_fallback,
-    create_transcript_text_fallback
+    create_transcript_text_fallback,
+    create_solo_session_text_fallback
 )
 from .utils import (
     validate_text_content,
@@ -24,10 +31,13 @@ __all__ = [
     'analyze_lesson_context',
     'research_best_practices',
     'generate_observation_report',
+    'solo_feedback_conversation',
     'create_observation_report_pdf',
+    'create_solo_session_pdf',
     'create_dual_column_pdf',
     'create_text_fallback',
     'create_transcript_text_fallback',
+    'create_solo_session_text_fallback',
     'validate_text_content',
     'validate_pdf_inputs',
     'sanitize_text_for_pdf',
